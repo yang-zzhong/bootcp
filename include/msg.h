@@ -39,7 +39,6 @@ namespace bootcp
         virtual void pack(char ** buf, int * len) = 0;
         virtual MsgId * msgid() = 0;
         virtual void reset() = 0;
-    protected:
         size_t read(Sock fd, char * buf, int len);
         size_t write(Sock fd, char * buf, int len);
     private:

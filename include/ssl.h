@@ -38,13 +38,18 @@ namespace bootcp
         void unaccept(Sock fd);
         size_t write(Sock fd, char * buf, int len);
         size_t read(Sock fd, char * buf, int len);
+        int err();
+        char * errstr();
     private:
         void init(std::string cert, std::string key, SSL_METHOD * method);
+        void inErr();
 
         std::map<Sock, ::SSL *> _accepted;
         std::string _cert_file;
         std::string _key_file;
         SSL_CTX * _ctx;
+        char * error;
+        int ecode;
     };
 }
 

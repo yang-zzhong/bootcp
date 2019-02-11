@@ -31,6 +31,7 @@ namespace bootcp
         ~BooTcp();
     protected:
         bool somethingWrong(int ecode);
+        bool somethingWrong(int ecode, bool maybeSSL);
         virtual void onRecv(Sock fd, Msg * msg);
         bool recvSock(Sock fd);
         bool sockerr(Sock fd);

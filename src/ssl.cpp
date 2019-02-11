@@ -16,21 +16,37 @@ void bootcp::SSL::init(std::string cert, std::string key, SSL_METHOD * method)
     SSLeay_add_ssl_algorithms();
     _ctx = SSL_CTX_new(method);
     if (!_ctx) {
-        ERR_print_errors_fp(stderr);
+        inErr();
         return;
     }
     if (SSL_CTX_use_certificate_file(_ctx, _cert_file.c_str(), SSL_FILETYPE_PEM) <= 0) {
-        ERR_print_errors_fp(stderr);
+        inErr();
         return;
     }
     if (SSL_CTX_use_PrivateKey_file(_ctx, _key_file.c_str(), SSL_FILETYPE_PEM) <= 0) {
-        ERR_print_errors_fp(stderr);
+        inErr();
         return;
     }
     if (!SSL_CTX_check_private_key(_ctx)) {
-        ERR_print_errors_fp(stderr);
+        inErr();
         return;
     }
+}
+
+int bootcp::SSL::err()
+{
+    return ecode;
+}
+
+char * bootcp::SSL::errstr()
+{
+    return error;
+}
+
+void bootcp::SSL::inErr()
+{
+    ecode = ERR_get_error();
+    error = ERR_error_string(ecode, nullptr);
 }
 
 void bootcp::SSL::accept(Sock fd)
@@ -70,5 +86,5 @@ size_t bootcp::SSL::read(Sock fd, char * buf, int len)
         return 0;
     }
     auto ssl = _accepted[fd];
-    return SSL_read (ssl, buf, len);
+    return SSL_read(ssl, buf, len);
 }

@@ -74,12 +74,7 @@ bool bootcp::BooTcp::send(Sock fd, Msg * msg)
     char * raw;
     int len;
     msg->pack(&raw, &len);
-    if (_ssl != nullptr) {
-        _ssl->write(fd, raw, len);
-        delete raw;
-        return true;
-    }
-    int ret = ::send(fd, raw, len, 0);
+    int ret = msg->write(fd, raw, len);
     delete raw;
     return !somethingWrong(ret);
 }
@@ -103,6 +98,20 @@ void bootcp::BooTcp::asend(Sock fd, Msg * msg)
 {
     send(fd, msg);
     delete msg;
+}
+
+bool bootcp::BooTcp::somethingWrong(int code, bool maybeSSL)
+{
+    if (_ssl == nullptr) {
+        return somethingWrong(code);
+    }
+    if (code > 0) {
+        return false;
+    }
+    ecode = _ssl->err();
+    error = _ssl->errstr();
+
+    return true;
 }
 
 bool bootcp::BooTcp::somethingWrong(int code)
