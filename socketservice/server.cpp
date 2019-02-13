@@ -1,10 +1,10 @@
 #include "server.h"
 
-bootcp::Server::Server()
+bootcp::Server::Server(Msg * msg) : BooTcp(msg)
 {
 }
 
-bootcp::Server::Server(int port)
+bootcp::Server::Server(Msg * msg, int port) : BooTcp(msg)
 {
 	listen(port);
 }
@@ -67,7 +67,41 @@ void bootcp::Server::accept()
 	}
 }
 
-void bootcp::Server::accepted(Accepted handle)
+void bootcp::Server::enable(Sock fd)
+{
+	if (!has(fd)) {
+		return;
+	}
+	_clock.lock();
+	clients[fd] = true;
+	_clock.unlock();
+}
+
+bool bootcp::Server::enabled(Sock fd)
+{
+	if (!has(fd)) {
+		return false;
+	}
+
+	return clients[fd];
+}
+
+bool bootcp::Server::has(Sock fd)
+{
+	return clients.find(fd) == clients.end();
+}
+
+void bootcp::Server::disable(Sock fd)
+{
+	if (clients.find(fd) == clients.end()) {
+		return;
+	}
+	_clock.lock();
+	clients[fd] = false;
+	_clock.unlock();
+}
+
+void bootcp::Server::afterAccepted(std::function<bool(Sock fd)> handle)
 {
 	_accepted = handle;
 }
@@ -92,7 +126,27 @@ void bootcp::Server::recv(Sock client)
 		if ( !valid) {
 			break;
 		}
-		recvSock(client);
+		recvSock(client, this);
+	}
+}
+
+void bootcp::Server::broadcast(Msg * msg, std::set<Sock> excepts)
+{
+	for (auto i = clients.begin(); i != clients.end(); ++i) {
+		if (!i->second || excepts.find(i->first) != excepts.end()) {
+			continue;
+		}
+		asyncSend(i->first, msg);
+	}
+}
+
+void bootcp::Server::send(Msg * msg, std::set<Sock> fds)
+{
+	for (auto i = clients.begin(); i != clients.end(); ++i) {
+		if (!i->second || fds.find(i->first) == fds.end()) {
+			continue;
+		}
+		asyncSend(i->first, msg);
 	}
 }
 
@@ -106,7 +160,7 @@ void bootcp::Server::broadcast(Msg * msg)
 	}
 }
 
-void bootcp::Server::closeAll()
+void bootcp::Server::close()
 {
 	_clock.lock();
 	auto i = clients.begin();
@@ -120,5 +174,5 @@ void bootcp::Server::closeAll()
 bootcp::Server::~Server()
 {
 	_ready = false;
-	closeAll();
+	close();
 }

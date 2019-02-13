@@ -117,15 +117,18 @@
   <ItemGroup>
     <ClInclude Include="client.h" />
     <ClInclude Include="msg.h" />
+    <ClInclude Include="msgid.h" />
     <ClInclude Include="server.h" />
     <ClInclude Include="bootcp.h" />
+    <ClInclude Include="simplemsg.h" />
+    <ClInclude Include="simplemsgid.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="client.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="msg.cpp" />
     <ClCompile Include="server.cpp" />
     <ClCompile Include="bootcp.cpp" />
+    <ClCompile Include="simplemsg.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

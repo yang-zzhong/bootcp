@@ -13,12 +13,13 @@ namespace bootcp
 	class Client : public BooTcp
 	{
 	public:
-		Client();
-		Client(char * ip, int port);
+		Client(Msg * msg);
+		Client(Msg * msg, char * ip, int port);
 		bool connect(char * ip, int port);
 		bool connected();
 		void close();
 		void send(Msg * msg);
+		void wait(MsgId * msgid);
 		virtual Sock fd() override;
 		void recv();
 		~Client();

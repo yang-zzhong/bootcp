@@ -5,33 +5,38 @@
 #include <thread>
 #include <mutex>
 #include <map>
+#include <set>
 
 namespace bootcp
 {
-	typedef bool(*Accepted)(Sock fd);
-
 	class Server : public BooTcp
 	{
 	public:
-		Server();
-		Server(int port);
+		Server(Msg * msg);
+		Server(Msg * msg, int port);
 		bool ready();
 		bool listen(int port);
-		void accept();
-		void accepted(Accepted handle);
+		void enable(Sock fd);
+		void disable(Sock fd);
+		bool enabled(Sock fd);
+		bool has(Sock fd);
+		void afterAccepted(std::function<bool(Sock fd)> handle);
 		void close(Sock fd);
-		void closeAll();
+		void close();
+		void send(Msg * msg, std::set<Sock> fds);
 		void broadcast(Msg * msg);
-		void recv(Sock client);
+		void broadcast(Msg * msg, std::set<Sock> excepts);
 		Sock fd() override;
 		~Server();
 	private:
 		void read(Sock fd, char *buf, int len);
+		void accept();
+		void recv(Sock client);
 
 	private:
 		Sock _fd;
 		bool _ready = false;
-		Accepted _accepted = nullptr;
+		std::function<bool(Sock fd)> _accepted = nullptr;
 		std::mutex _clock;
 		std::map<Sock, bool> clients;
 	};

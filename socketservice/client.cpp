@@ -1,12 +1,17 @@
 #include "client.h"
 
-bootcp::Client::Client()
+bootcp::Client::Client(Msg * msg) : BooTcp(msg)
 {
 }
 
-bootcp::Client::Client(char * ip, int port)
+bootcp::Client::Client(Msg * msg, char * ip, int port) : BooTcp(msg)
 {
 	connect(ip, port);
+}
+
+void bootcp::Client::wait(MsgId * msgid)
+{
+	bootcp::BooTcp::wait(fd(), msgid);
 }
 
 Sock bootcp::Client::fd()
@@ -58,7 +63,7 @@ bool bootcp::Client::connected()
 void bootcp::Client::recv()
 {
 	while (_connected) {
-		recvSock(_fd);
+		recvSock(_fd, this);
 	}
 }
 

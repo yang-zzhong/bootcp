@@ -1,7 +1,9 @@
 #include "bootcp.h"
 
-bootcp::BooTcp::BooTcp()
+bootcp::BooTcp::BooTcp(Msg * msg)
 {
+	_msg = msg->clone();
+	_msg->reset();
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)  
 	_inited = false;
 	WORD wVersionRequested;
@@ -19,22 +21,23 @@ bootcp::BooTcp::BooTcp()
 #endif  
 }
 
-void bootcp::BooTcp::wait(MsgId msgid)
+void bootcp::BooTcp::wait(Sock fd, MsgId * msgid)
 {
 	_wlock.lock();
-	waits.push_back(msgid);
+	if (waits.find(fd) == waits.end()) {
+		waits[fd] = std::list<MsgId *>();
+	}
+	waits[fd].push_back(msgid->clone());
 	_wlock.unlock();
 }
 
 bool bootcp::BooTcp::send(Sock fd, Msg * msg)
 {
-	int len = VOD_MSG_HEADER_LEN + msg->length + 1;
-	char * raw = (char *)malloc(len);
-	memset(raw, 0, len);
-	memcpy(raw, msg, VOD_MSG_HEADER_LEN);
-	memcpy(raw + VOD_MSG_HEADER_LEN + 1, msg->data(), msg->length + 1);
+	char * raw;
+	int len;
+	msg->pack(&raw, &len);
 	ecode = ::send(fd, raw, len, 0);
-	::free(raw);
+	delete raw;
 	return somethingWrong(ecode);
 }
 
@@ -67,58 +70,54 @@ int bootcp::BooTcp::somethingWrong(int code)
 #endif
 }
 
-void bootcp::BooTcp::reg(MsgId msgId, OnMsg onMsg)
+void bootcp::BooTcp::reg(MsgId * msgId, std::function<void(Sock fd, Msg * msg, bootcp::BooTcp * tcp)> onMsg)
 {
-	handlers[msgId] = onMsg;
+	handlers[msgId->clone()] = onMsg;
 }
 
-void bootcp::BooTcp::recvSock(Sock fd)
+void bootcp::BooTcp::recvSock(Sock fd, bootcp::BooTcp * tcp)
 {
-	Msg msg;
-	read(fd, (char *)&msg, VOD_MSG_HEADER_LEN + 1);
-	if (!msg.valid()) {
-		return;
-	}
+	auto msg = _msg->clone();
+	msg->recv(fd);
 	_wlock.lock();
-	if (!waits.empty()) {
-		MsgId msgid = waits.front();
-		if (msgid != msg.id) {
+	if (waits.find(fd) != waits.end() && !waits[fd].empty()) {
+		MsgId * msgid = waits[fd].front();
+		MsgId * mmsgid = msg->msgid();
+		if (msgid->match(mmsgid)) {
+			delete mmsgid;
 			_wlock.unlock();
 			return;
 		}
-		waits.pop_front();
+		delete mmsgid;
+		waits[fd].pop_front();
+		delete msgid;
 	}
 	_wlock.unlock();
-	read(fd, msg.initData(), msg.length);
-	onRecv(fd, &msg);
+	onRecv(fd, msg, tcp);
+	delete msg;
 }
 
-void bootcp::BooTcp::read(Sock fd, char * buf, int len)
-{
-	int read = 0;
-	while (read < len) {
-		read += ::recv(fd, buf + read, len - read, 0);
-	}
-}
-
-void bootcp::BooTcp::onNotExistHandler(OnNotExistHandler handle)
+void bootcp::BooTcp::onNotExistHandler(std::function<void(Sock fd, Msg * msg, BooTcp *tcp)> handle)
 {
 	_notExistHandler = handle;
 }
 
-void bootcp::BooTcp::onRecv(Sock fd, Msg * msg)
+void bootcp::BooTcp::onRecv(Sock fd, Msg * msg, bootcp::BooTcp * tcp)
 {
 	auto i = handlers.begin();
 	while (i != handlers.end()) {
-		if (i->first != msg->id) {
+		MsgId * msgid = msg->msgid();
+		if (!i->first->match(msgid)) {
+			delete msgid;
 			i++;
 			continue;
 		}
-		i->second(fd, msg);
+		delete msgid;
+		i->second(fd, msg, tcp);
 		break;
 	}
 	if (i == handlers.end() && _notExistHandler != nullptr) {
-		_notExistHandler(fd, msg);
+		_notExistHandler(fd, msg, tcp);
 	}
 }
 
@@ -139,6 +138,17 @@ void bootcp::BooTcp::close(Sock fd)
 
 bootcp::BooTcp::~BooTcp()
 {
+	delete _msg;
+	auto wf = waits.begin();
+	while (wf++ != waits.end()) {
+		auto l = wf->second;
+		auto wm = wf->second.begin();
+		while (wm++ != wf->second.end()) {
+			delete *wm;
+			wf->second.erase(wm);
+		}
+		waits.erase(wf);
+	}
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)  
 	if (_inited) {
 		WSACleanup();

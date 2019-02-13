@@ -27,6 +27,15 @@
     <ClInclude Include="bootcp.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="simplemsg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="msgid.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="simplemsgid.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="server.cpp">
@@ -35,13 +44,13 @@
     <ClCompile Include="client.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="msg.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="bootcp.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="simplemsg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
