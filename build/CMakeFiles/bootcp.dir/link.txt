@@ -1,0 +1,2 @@
+/usr/bin/ar qc libbootcp.a  CMakeFiles/bootcp.dir/src/bootcp.cpp.o CMakeFiles/bootcp.dir/src/client.cpp.o CMakeFiles/bootcp.dir/src/server.cpp.o CMakeFiles/bootcp.dir/src/simplemsg.cpp.o
+/usr/bin/ranlib libbootcp.a

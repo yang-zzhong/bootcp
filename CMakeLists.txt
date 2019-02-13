@@ -1,0 +1,21 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+
+PROJECT(bootcp)
+
+SET(CMAKE_CXX_STANDARD 11)
+SET(SRC_DIR src)
+SET(INC_DIR include)
+
+SET(LIB_FILES ${SRC_DIR}/bootcp.cpp
+    ${SRC_DIR}/client.cpp
+    ${SRC_DIR}/server.cpp
+    ${SRC_DIR}/simplemsg.cpp)
+
+INCLUDE_DIRECTORIES(${SRC_DIR})
+INCLUDE_DIRECTORIES(${INC_DIR})
+
+ADD_LIBRARY(bootcp ${LIB_FILES})
+
+ADD_EXECUTABLE(main ${SRC_DIR}/main.cpp)
+
+TARGET_LINK_LIBRARIES(main bootcp pthread)

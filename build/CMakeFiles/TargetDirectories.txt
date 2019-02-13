@@ -1,0 +1,4 @@
+/home/young/software/bootcp/build/CMakeFiles/rebuild_cache.dir
+/home/young/software/bootcp/build/CMakeFiles/edit_cache.dir
+/home/young/software/bootcp/build/CMakeFiles/bootcp.dir
+/home/young/software/bootcp/build/CMakeFiles/main.dir
