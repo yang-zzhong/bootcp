@@ -17,7 +17,8 @@ int main()
 		return -1;
 	}
 	server.reg(msgid, [](Sock client, bootcp::Msg * msg, bootcp::BooTcp * tcp) {
-		std::cout << "message from client: " << msg->data() << std::endl;
+        char * data = msg->data();
+		std::cout << "message from client: " << data << std::endl;
 		auto server = (bootcp::Server*)tcp;
 		server->broadcast(msg);
 	});
