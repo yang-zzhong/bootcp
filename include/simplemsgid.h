@@ -6,7 +6,6 @@
 
 namespace bootcp
 {
-
 	class SimpleMsgId : public MsgId
 	{
 	public:

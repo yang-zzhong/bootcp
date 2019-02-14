@@ -60,3 +60,13 @@ int main()
 
 	return 0;
 }
+
+int http()
+{
+    bootcp::HttpServer server(1111);
+    server.on(bootcp::HttpMsgId("/hello/world", "POST"), [](bootcp::HttpRequest * req) {
+        bootcp::HttpResponse res;
+        res.write("hello world");
+        return res;
+    });
+}
