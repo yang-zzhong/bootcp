@@ -1,5 +1,5 @@
-#ifndef _VOD_SOCKET_SERVER_H
-#define _VOD_SOCKET_SERVER_H
+#ifndef _BOO_TCP_SERVER_H
+#define _BOO_TCP_SERVER_H
 
 #include "bootcp.h"
 #include <thread>
@@ -16,13 +16,14 @@ namespace bootcp
 		Server(Msg * msg, int port);
 		bool ready();
 		bool listen(int port);
+		void stop();
 		void enable(Sock fd);
 		void disable(Sock fd);
 		bool enabled(Sock fd);
 		bool has(Sock fd);
 		void afterAccepted(std::function<bool(Sock fd)> handle);
 		void close(Sock fd);
-		void close();
+		void closeClients();
 		void send(Msg * msg, std::set<Sock> fds);
 		void broadcast(Msg * msg);
 		void broadcast(Msg * msg, std::set<Sock> excepts);
@@ -35,7 +36,7 @@ namespace bootcp
 
 	private:
 		Sock _fd;
-		bool _ready = false;
+		bool _running = false;
 		std::function<bool(Sock fd)> _accepted = nullptr;
 		std::mutex _clock;
 		std::map<Sock, bool> clients;

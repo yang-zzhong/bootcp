@@ -15,8 +15,12 @@ SET(LIB_FILES ${SRC_DIR}/bootcp.cpp
 
 INCLUDE_DIRECTORIES(${SRC_DIR} ${INC_DIR})
 
-ADD_LIBRARY(bootcp SHARED ${LIB_FILES})
+ADD_LIBRARY(bootcp ${LIB_FILES})
 
 ADD_EXECUTABLE(main ${SRC_DIR}/main.cpp)
 
-TARGET_LINK_LIBRARIES(main bootcp pthread)
+IF (WIN32)
+	TARGET_LINK_LIBRARIES(main bootcp)
+ELSE ()
+	TARGET_LINK_LIBRARIES(main bootcp pthread)
+ENDIF ()

@@ -31,14 +31,25 @@ void bootcp::BooTcp::wait(Sock fd, MsgId * msgid)
 	_wlock.unlock();
 }
 
+int bootcp::BooTcp::err()
+{
+	return ecode;
+}
+
+std::string bootcp::BooTcp::strerr()
+{
+	return error;
+}
+
 bool bootcp::BooTcp::send(Sock fd, Msg * msg)
 {
 	char * raw;
 	int len;
 	msg->pack(&raw, &len);
-	ecode = ::send(fd, raw, len, 0);
+	int ret = ::send(fd, raw, len, 0);
 	delete raw;
-	return somethingWrong(ecode);
+
+	return !somethingWrong(ret);
 }
 
 void bootcp::BooTcp::asyncSend(Sock fd, Msg * msg)
@@ -54,23 +65,28 @@ void bootcp::BooTcp::asend(Sock fd, Msg * msg)
 	delete msg;
 }
 
-int bootcp::BooTcp::somethingWrong(int code)
+bool bootcp::BooTcp::somethingWrong(int code)
 {
 #ifdef WIN32 
+	ecode = GetLastError();
 	if (code == SOCKET_ERROR) {
-		ecode = GetLastError();
 		// error = strerror_s(code);
-		return -1;
+		return true;
 	}
 
-	return 0;
+	return false;
 #else
-	error = strerror(ecode);
-	return ecode;
+	ecode = errno;
+	if (code < 0) {
+		error = strerror(ecode);
+		return true;
+	}
+
+	return false;
 #endif
 }
 
-void bootcp::BooTcp::reg(MsgId * msgId, std::function<void(Sock fd, Msg * msg, bootcp::BooTcp * tcp)> onMsg)
+void bootcp::BooTcp::on(MsgId * msgId, std::function<void(Sock fd, Msg * msg, bootcp::BooTcp * tcp)> onMsg)
 {
 	handlers[msgId->clone()] = onMsg;
 }
@@ -123,7 +139,7 @@ void bootcp::BooTcp::onRecv(Sock fd, Msg * msg, bootcp::BooTcp * tcp)
 
 bool bootcp::BooTcp::sockerr(Sock fd)
 {
-	return somethingWrong((int)fd) < 0;
+	return somethingWrong((int)fd);
 }
 
 void bootcp::BooTcp::close(Sock fd)

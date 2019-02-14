@@ -11,6 +11,7 @@ namespace bootcp
 	{
 	public:
 		SimpleMsg();
+		SimpleMsg(int id, char * buf);
 		~SimpleMsg();
 		virtual char * data() const override;
 		virtual void recv(Sock fd) override;

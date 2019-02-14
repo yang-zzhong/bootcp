@@ -7,6 +7,12 @@ bootcp::SimpleMsg::SimpleMsg()
     memcpy(end, sep, 3);
 }
 
+bootcp::SimpleMsg::SimpleMsg(int id, char * buf): id(id)
+{
+	SimpleMsg();
+	write(buf);
+}
+
 bool bootcp::SimpleMsg::valid()
 {
 	std::string b(begin), e(end), sep("\r\t");
@@ -88,7 +94,9 @@ void bootcp::SimpleMsg::pack(char ** raw, int * len)
 	*raw = (char *)malloc(*len);
 	memset(*raw, 0, *len);
 	memcpy(*raw, this, VOD_MSG_HEADER_LEN);
-	memcpy(*raw + VOD_MSG_HEADER_LEN + 1, data(), length + 1);
+	if (data() != nullptr && length > 0) {
+		memcpy(*raw + VOD_MSG_HEADER_LEN + 1, data(), length + 1);
+	}
 }
 
 bootcp::SimpleMsg::~SimpleMsg()

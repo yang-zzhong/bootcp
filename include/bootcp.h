@@ -15,16 +15,18 @@ namespace bootcp
 	{
 	public:
 		BooTcp(Msg * msg);
-		void reg(MsgId * msgid, std::function<void(Sock fd, Msg * msg, BooTcp * handler)> onMsg);
+		void on(MsgId * msgid, std::function<void(Sock fd, Msg * msg, BooTcp * handler)> onMsg);
 		bool send(Sock fd, Msg * msg);
 		void asyncSend(Sock fd, Msg * msg);
 		void onNotExistHandler(std::function<void(Sock fd, Msg *msg, BooTcp * handler)> handle);
 		void wait(Sock fd, MsgId * msgId);
 		void close(Sock fd);
+		int err();
+		std::string strerr();
 		virtual Sock fd() = 0;
 		~BooTcp();
 	protected:
-		int somethingWrong(int ecode);
+		bool somethingWrong(int ecode);
 		void onRecv(Sock fd, Msg * msg, BooTcp * bootcp);
 		void recvSock(Sock fd, BooTcp * bootcp);
 		bool sockerr(Sock fd);

@@ -4,14 +4,22 @@ bootcp::Server::Server(Msg * msg) : BooTcp(msg)
 {
 }
 
+
 bootcp::Server::Server(Msg * msg, int port) : BooTcp(msg)
 {
 	listen(port);
 }
 
+void bootcp::Server::stop()
+{
+	_running = false;
+	closeClients();
+	close(fd());
+}
+
 bool bootcp::Server::ready()
 {
-	return _ready;
+	return _running;
 }
 
 Sock bootcp::Server::fd()
@@ -21,7 +29,7 @@ Sock bootcp::Server::fd()
 
 bool bootcp::Server::listen(int port)
 {
-	if (_ready) {
+	if (_running) {
 		return true;
 	}
 	_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -40,7 +48,7 @@ bool bootcp::Server::listen(int port)
 	if (somethingWrong(ecode)) {
 		return false;
 	}
-	_ready = true;
+	_running = true;
 	std::thread accept(&bootcp::Server::accept, this);
 	accept.detach();
 
@@ -49,9 +57,13 @@ bool bootcp::Server::listen(int port)
 
 void bootcp::Server::accept()
 {
+#ifdef WIN32
+	int len = sizeof(sockaddr);
+#else
 	socklen_t len = sizeof(sockaddr);
+#endif
 	struct sockaddr_in sockAddr;
-	while (_ready) {
+	while (_running) {
 		Sock client = ::accept(_fd, (sockaddr*)&sockAddr, &len);
 		if (sockerr(client)) {
 			continue;
@@ -120,7 +132,7 @@ void bootcp::Server::close(Sock fd)
 
 void bootcp::Server::recv(Sock client)
 {
-	while (true) {
+	while (_running) {
 		auto i = clients.find(client);
 		bool valid = i != clients.end() && clients[client];
 		if ( !valid) {
@@ -160,11 +172,12 @@ void bootcp::Server::broadcast(Msg * msg)
 	}
 }
 
-void bootcp::Server::close()
+void bootcp::Server::closeClients()
 {
 	_clock.lock();
 	auto i = clients.begin();
 	while (i != clients.end()) {
+		close(i->first);
 		clients.erase(i->first);
 		i = clients.begin();
 	}
@@ -173,6 +186,5 @@ void bootcp::Server::close()
 
 bootcp::Server::~Server()
 {
-	_ready = false;
-	close();
+	stop();
 }

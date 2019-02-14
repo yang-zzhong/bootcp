@@ -50,9 +50,9 @@ void bootcp::Client::close()
 	bootcp::BooTcp::close(fd());
 }
 
-void bootcp::Client::send(Msg * msg)
+bool bootcp::Client::send(Msg * msg)
 {
-	bootcp::BooTcp::send(fd(), msg);
+	return bootcp::BooTcp::send(fd(), msg);
 }
 
 bool bootcp::Client::connected()
