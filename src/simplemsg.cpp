@@ -15,11 +15,8 @@ bootcp::SimpleMsg::SimpleMsg(int id, char * buf): id(id)
 
 bool bootcp::SimpleMsg::valid()
 {
-	std::string sep("\r\t");
-	std::string b(begin);
-	std::string e(end);
-
-	return b == sep && e == sep;
+	char sep[] = "\r\t";
+	return memcmp(begin, sep, 2) == 0 && memcmp(end, sep, 2) == 0;
 }
 
 char * bootcp::SimpleMsg::initData()
@@ -75,7 +72,12 @@ bootcp::MsgId * bootcp::SimpleMsg::msgid()
 
 void bootcp::SimpleMsg::recv(Sock fd)
 {
-	read(fd, (char *)this, VOD_MSG_HEADER_LEN + 1);
+	char header[VOD_MSG_HEADER_LEN];
+	read(fd, (char *)header, VOD_MSG_HEADER_LEN);
+	memcpy(begin, header, 2);
+	memcpy(&id, header + 2, 4);
+	memcpy(&length, header + 6, 4);
+	memcpy(end, header + 10, 2);
 	if (!valid()) {
 		return;
 	}
@@ -92,12 +94,16 @@ void bootcp::SimpleMsg::read(Sock fd, char * buf, int len)
 
 void bootcp::SimpleMsg::pack(char ** raw, int * len)
 {
-	*len = VOD_MSG_HEADER_LEN + length + 1;
+	*len = VOD_MSG_HEADER_LEN + length;
 	*raw = (char *)malloc(*len);
 	memset(*raw, 0, *len);
-	memcpy(*raw, this, VOD_MSG_HEADER_LEN);
+	memcpy(*raw, begin, 2);
+	memcpy(*raw + 2, &id, 4);
+	memcpy(*raw + 6, &length, 4);
+	memcpy(*raw + 10, end, 2);
+	auto test = (SimpleMsg*)raw;
 	if (data() != nullptr && length > 0) {
-		memcpy(*raw + VOD_MSG_HEADER_LEN + 1, data(), length + 1);
+		memcpy((char *)*raw + VOD_MSG_HEADER_LEN, data(), length);
 	}
 }
 
