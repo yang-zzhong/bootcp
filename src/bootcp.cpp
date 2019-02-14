@@ -69,8 +69,17 @@ bool bootcp::BooTcp::somethingWrong(int code)
 {
 #ifdef WIN32 
 	ecode = GetLastError();
+	char * err;
 	if (code == SOCKET_ERROR) {
-		// error = strerror_s(code);
+        if (!FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+                           NULL,
+                           ecode,
+                           MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // default language
+                           (LPTSTR)&err,
+                           0,
+                           NULL))
+            return true;
+		error = err;
 		return true;
 	}
 
@@ -88,7 +97,9 @@ bool bootcp::BooTcp::somethingWrong(int code)
 
 void bootcp::BooTcp::on(MsgId * msgId, std::function<void(Sock fd, Msg * msg, bootcp::BooTcp * tcp)> onMsg)
 {
+	_hlock.lock();
 	handlers[msgId->clone()] = onMsg;
+	_hlock.unlock();
 }
 
 void bootcp::BooTcp::recvSock(Sock fd, bootcp::BooTcp * tcp)
@@ -123,6 +134,7 @@ void bootcp::BooTcp::onNotExistHandler(std::function<void(Sock fd, Msg * msg, Bo
 
 void bootcp::BooTcp::onRecv(Sock fd, Msg * msg, bootcp::BooTcp * tcp)
 {
+	_hlock.lock();
 	auto i = handlers.begin();
 	while (i != handlers.end()) {
 		MsgId * msgid = msg->msgid();
@@ -138,6 +150,7 @@ void bootcp::BooTcp::onRecv(Sock fd, Msg * msg, bootcp::BooTcp * tcp)
 	if (i == handlers.end() && _notExistHandler != nullptr) {
 		_notExistHandler(fd, msg, tcp);
 	}
+	_hlock.unlock();
 }
 
 bool bootcp::BooTcp::sockerr(Sock fd)
@@ -147,11 +160,11 @@ bool bootcp::BooTcp::sockerr(Sock fd)
 
 void bootcp::BooTcp::close(Sock fd)
 {
-	shutdown(fd,2);
+	shutdown(fd, 2);
 #ifdef WIN32  
 	closesocket(fd);
 #else
-	close(fd);
+	::close(fd);
 #endif  
 }
 

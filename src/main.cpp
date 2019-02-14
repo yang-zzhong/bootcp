@@ -54,7 +54,7 @@ int main()
 			msg.id = TEST_MSG_ID;
 		}
 		if (!client.send(&msg)) {
-			std::cout << "send error: " << client.err() << std::endl;
+			std::cout << "send errno: " << client.err() << " msg: " << client.strerr() << std::endl;
 		}
 	}
 

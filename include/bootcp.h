@@ -40,6 +40,7 @@ namespace bootcp
 		std::map<MsgId*, std::function<void(Sock fd, Msg * msg, BooTcp * handler)>> handlers;
 		std::map<Sock, std::list<MsgId*>> waits;
 		std::mutex _wlock;
+		std::mutex _hlock;
 		bool _inited = false;
 		std::function<void(Sock fd, Msg * msg, BooTcp * handler)> _notExistHandler = nullptr;
 	};

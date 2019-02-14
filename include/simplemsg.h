@@ -5,7 +5,7 @@
 #include "msg.h"
 #include "simplemsgid.h"
 
-#define VOD_MSG_HEADER_LEN 12
+#define MSG_HEADER_LEN 12
 
 namespace bootcp
 {

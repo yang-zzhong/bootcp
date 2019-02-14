@@ -72,8 +72,8 @@ bootcp::MsgId * bootcp::SimpleMsg::msgid()
 
 void bootcp::SimpleMsg::recv(Sock fd)
 {
-	char header[VOD_MSG_HEADER_LEN];
-	read(fd, (char *)header, VOD_MSG_HEADER_LEN);
+	char header[MSG_HEADER_LEN];
+	read(fd, (char *)header, MSG_HEADER_LEN);
 	memcpy(begin, header, 2);
 	memcpy(&id, header + 2, 4);
 	memcpy(&length, header + 6, 4);
@@ -94,7 +94,7 @@ void bootcp::SimpleMsg::read(Sock fd, char * buf, int len)
 
 void bootcp::SimpleMsg::pack(char ** raw, int * len)
 {
-	*len = VOD_MSG_HEADER_LEN + length;
+	*len = MSG_HEADER_LEN + length;
 	*raw = (char *)malloc(*len);
 	memset(*raw, 0, *len);
 	memcpy(*raw, begin, 2);
@@ -103,7 +103,7 @@ void bootcp::SimpleMsg::pack(char ** raw, int * len)
 	memcpy(*raw + 10, end, 2);
 	auto test = (SimpleMsg*)raw;
 	if (data() != nullptr && length > 0) {
-		memcpy((char *)*raw + VOD_MSG_HEADER_LEN, data(), length);
+		memcpy((char *)*raw + MSG_HEADER_LEN, data(), length);
 	}
 }
 
