@@ -2,7 +2,6 @@
 #ifndef _BOO_TCP_MSG_H
 #define _BOO_TCP_MSG_H
 
-#define VOD_MSG_HEADER_LEN 14
 
 #include <string.h>
 #include <malloc.h>
@@ -39,6 +38,7 @@ namespace bootcp
 		virtual void pack(char ** buf, int * len) = 0;
 		virtual MsgId * msgid() = 0;
 		virtual void reset() = 0;
+		virtual bool valid() = 0;
 	};
 
 }

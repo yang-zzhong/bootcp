@@ -5,6 +5,8 @@
 #include "msg.h"
 #include "simplemsgid.h"
 
+#define VOD_MSG_HEADER_LEN 12
+
 namespace bootcp
 {
 	class SimpleMsg : public Msg
@@ -19,15 +21,15 @@ namespace bootcp
 		virtual void pack(char ** raw, int * len) override;
 		virtual MsgId * msgid() override;
 		virtual void reset() override;
+		virtual bool valid() override;
 		void write(char * buf);
 	public:
-		char begin[3];
+		char begin[2];
 		int id = 0;
 		int length = 0;
-		char end[3];
+		char end[2];
 	private:
 		char *initData();
-		bool valid();
 		void read(Sock fd, char * buf, int len);
 	private:
 		char * _data = nullptr;

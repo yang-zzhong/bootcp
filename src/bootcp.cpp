@@ -95,6 +95,9 @@ void bootcp::BooTcp::recvSock(Sock fd, bootcp::BooTcp * tcp)
 {
 	auto msg = _msg->clone();
 	msg->recv(fd);
+	if (!msg->valid()) {
+		return;
+	}
 	_wlock.lock();
 	if (waits.find(fd) != waits.end() && !waits[fd].empty()) {
 		MsgId * msgid = waits[fd].front();

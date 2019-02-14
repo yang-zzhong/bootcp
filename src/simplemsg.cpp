@@ -2,9 +2,9 @@
 
 bootcp::SimpleMsg::SimpleMsg()
 {
-	char sep[] = "\r\t\0";
-    memcpy(begin, sep, 3);
-    memcpy(end, sep, 3);
+	char sep[] = "\r\t";
+	memcpy(begin, sep, 2);
+	memcpy(end, sep, 2);
 }
 
 bootcp::SimpleMsg::SimpleMsg(int id, char * buf): id(id)
@@ -15,7 +15,9 @@ bootcp::SimpleMsg::SimpleMsg(int id, char * buf): id(id)
 
 bool bootcp::SimpleMsg::valid()
 {
-	std::string b(begin), e(end), sep("\r\t");
+	std::string sep("\r\t");
+	std::string b(begin);
+	std::string e(end);
 
 	return b == sep && e == sep;
 }
