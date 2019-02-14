@@ -1,6 +1,6 @@
 
-#ifndef _VOD_SOCKET_MSG_H
-#define _VOD_SOCKET_MSG_H
+#ifndef _BOO_TCP_MSG_H
+#define _BOO_TCP_MSG_H
 
 #define VOD_MSG_HEADER_LEN 14
 

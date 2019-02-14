@@ -4,7 +4,8 @@
 #include "simplemsgid.h"
 #include "simplemsg.h"
 
-#define VOD_TEST_MSG_ID 1
+#define TEST_MSG_ID 1
+#define TEST_CLOSE_ID 2
 
 
 int main() 
@@ -15,30 +16,39 @@ int main()
 		std::cout << "server startup error" << std::endl;
 		return -1;
 	}
-	server.reg(&bootcp::SimpleMsgId(VOD_TEST_MSG_ID), [](Sock client, bootcp::Msg * msg, bootcp::BooTcp * tcp) {
+	server.afterAccepted([](Sock client) -> bool {
+		std::cout << "建立连接: " << client << std::endl;
+		return true;
+	});
+	server.on(&bootcp::SimpleMsgId(TEST_MSG_ID), [](Sock client, bootcp::Msg * msg, bootcp::BooTcp * tcp) {
 		std::cout << "message from client: " << msg->data() << std::endl;
 		auto server = (bootcp::Server*)tcp;
 		server->broadcast(msg);
-
-		// bootcp::SimpleMsg reply;
-		// reply.write((char *)"hello world");
-		// reply.id = VOD_TEST_MSG_ID;
-		// server->send(client, reply);
+	});
+	server.on(&bootcp::SimpleMsgId(TEST_CLOSE_ID), [](Sock client, bootcp::Msg *msg, bootcp::BooTcp * tcp) {
+		auto server = (bootcp::Server*)tcp;
+		server->stop();
 	});
 	bootcp::Client client(&bootcp::SimpleMsg(), (char *)"127.0.0.1", 1111);
 	if (!client.connected()) {
 		std::cout << "连接失败" << std::endl;
 		return -1;
 	}
-	client.reg(&bootcp::SimpleMsgId(VOD_TEST_MSG_ID), [](Sock server, bootcp::Msg * msg, bootcp::BooTcp * tcp) {
+	client.on(&bootcp::SimpleMsgId(TEST_MSG_ID), [](Sock server, bootcp::Msg * msg, bootcp::BooTcp * tcp) {
 		std::cout << "message from server: " << msg->data() << std::endl;
 	});
 	while (true) {
 		std::cin >> buf;
 		bootcp::SimpleMsg msg;
-		msg.write(buf);
-		msg.id = VOD_TEST_MSG_ID;
-		client.send(&msg);
+		if (strcmp(buf, (char *)"close") == 0) {
+			msg.id = TEST_CLOSE_ID;
+		} else {
+			msg.write(buf);
+			msg.id = TEST_MSG_ID;
+		}
+		if (!client.send(&msg)) {
+			std::cout << "发送失败: " << client.err() << std::endl;
+		}
 	}
 
 	return 0;

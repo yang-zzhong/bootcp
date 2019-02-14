@@ -1,8 +1,10 @@
 
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)  
 #pragma warning(disable:4996)
+#endif
 
-#ifndef _VOD_SOCKET_CLIENT_H_
-#define _VOD_SOCKET_CLIENT_H_
+#ifndef _BOO_TCP_CLIENT_H_
+#define _BOO_TCP_CLIENT_H_
 
 
 #include "bootcp.h"
@@ -18,7 +20,7 @@ namespace bootcp
 		bool connect(char * ip, int port);
 		bool connected();
 		void close();
-		void send(Msg * msg);
+		bool send(Msg * msg);
 		void wait(MsgId * msgid);
 		virtual Sock fd() override;
 		void recv();
