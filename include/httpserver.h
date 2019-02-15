@@ -1,21 +1,22 @@
-#ifndef _BOO_HTTP_SERVER_H
-#define _BOO_HTTP_SERVER_H
+#ifndef _BOO_TCP_HTTP_SERVER_H
+#define _BOO_TCP_HTTP_SERVER_H
 
 #include <functional>
-#include "bootcp.h"
+#include "server.h"
+#include "httpmsg.h"
 #include "httprequest.h"
 #include "httpresponse.h"
 
-namespace bootcp
+namespace boohttp
 {
-	class HttpServer : public Server
+	class Server : public bootcp::Server
 	{
 	public:
-		HttpServer(Msg * msg);
-		HttpServer(Msg * msg, int port);
-        void on(MsgId * msgid, std::function<HttpResponse *(HttpRequest * req)>);
-        void on(char * path, Method method, std::function<HttpResponse *(HttpRequest * req)>);
-		~HttpServer();
+		Server();
+		Server(int port);
+        void on(MsgId * msgid, std::function<Response *(Request * req)>);
+        void on(char * path, Method method, std::function<Response *(Request * req)>);
+		~Server();
 	};
 }
 #endif

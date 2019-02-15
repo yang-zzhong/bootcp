@@ -2,20 +2,25 @@
 
 #define _BOO_TCP_HTTP_MSG_ID_H
 
+#include "msg.h"
 #include "msgid.h"
 #include <string.h>
 
-namespace bootcp
+namespace boohttp
 {
-    class HttpMsgId : public MsgId
+    typedef enum {POST, PUT, GET, DEL, PATCH, OPTION, CONNECT} Method;
+
+    class MsgId : public bootcp::MsgId
     {
     public:
-        HttpMsgId(char * path, Method method);
-        ~HttpMsgId();
-        virtual bool match(MsgId * msgid) override;
-        virtual MsgId * clone() override;
+        MsgId(char * path, Method method);
+        ~MsgId();
+        virtual bool match(bootcp::MsgId * msgid) override;
+        virtual bootcp::MsgId * clone() override;
     private:
         char * path;
         Method method;
-    }
+	};
 }
+
+#endif

@@ -32,13 +32,11 @@ namespace bootcp
 	class Msg
 	{
 	public:
-		virtual char * data() const = 0;
-		virtual void recv(Sock fd) = 0;
+		virtual bool recv(Sock fd) = 0;
 		virtual Msg * clone() = 0;
 		virtual void pack(char ** buf, int * len) = 0;
 		virtual MsgId * msgid() = 0;
 		virtual void reset() = 0;
-		virtual bool valid() = 0;
 	};
 
 }

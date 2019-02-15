@@ -105,8 +105,7 @@ void bootcp::BooTcp::on(MsgId * msgId, std::function<void(Sock fd, Msg * msg, bo
 void bootcp::BooTcp::recvSock(Sock fd, bootcp::BooTcp * tcp)
 {
 	auto msg = _msg->clone();
-	msg->recv(fd);
-	if (!msg->valid()) {
+	if (!msg->recv(fd)) {
 		return;
 	}
 	_wlock.lock();

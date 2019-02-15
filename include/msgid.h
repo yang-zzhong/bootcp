@@ -1,4 +1,3 @@
-#pragma once
 #ifndef _BOO_TCP_MSG_ID_H
 #define _BOO_TCP_MSG_ID_H
 

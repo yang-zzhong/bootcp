@@ -3,11 +3,40 @@
 #include <iostream>
 #include "simplemsgid.h"
 #include "simplemsg.h"
+#include "httpserver.h"
+#include "httprequest.h"
+#include "httpresponse.h"
+#include "httpmsg.h"
+#include "httpclient.h"
 
 #define TEST_MSG_ID 1
 #define TEST_CLOSE_ID 2
 
+int http();
+
 int main() 
+{
+	return http();
+}
+
+int http()
+{
+    boohttp::Server s(1111);
+	boohttp::MsgId helloworld("/hello-world", boohttp::GET);
+    s.on(&helloworld, [](boohttp::Request * req) -> boohttp::Response * {
+		return nullptr;
+    });
+	char data[] = "GET /hello-world HTTP/1.0\r\nconTENT-Length: 5\r\n\r\nHELLO";
+	bootcp::Client c(&bootcp::SimpleMsg());
+	c.connect((char *)"127.0.0.1", 1111);
+	while (true) {
+		::send(c.fd(), data, strlen(data), 0);
+	}
+
+	return 0;
+}
+
+int simple()
 {
 	char buf[1024];
 	bootcp::SimpleMsg temp;
@@ -23,7 +52,8 @@ int main()
 		return true;
 	});
 	server.on(&msgid, [](Sock client, bootcp::Msg * msg, bootcp::BooTcp * tcp) {
-		char * data = msg->data();
+		auto m = (bootcp::SimpleMsg*)msg;
+		char * data = m->data();
 		if (data == nullptr) {
 			std::cout << "data is null" << std::endl;
 			return;
@@ -42,7 +72,8 @@ int main()
 		return -1;
 	}
 	client.on(&msgid, [](Sock server, bootcp::Msg * msg, bootcp::BooTcp * tcp) {
-		std::cout << "message from server: " << msg->data() << std::endl;
+		auto m = (bootcp::SimpleMsg*)msg;
+		std::cout << "message from server: " << m->data() << std::endl;
 	});
 	while (true) {
 		std::cin >> buf;
@@ -59,14 +90,4 @@ int main()
 	}
 
 	return 0;
-}
-
-int http()
-{
-    bootcp::HttpServer server(1111);
-    server.on(bootcp::HttpMsgId("/hello/world", "POST"), [](bootcp::HttpRequest * req) {
-        bootcp::HttpResponse res;
-        res.write("hello world");
-        return res;
-    });
 }

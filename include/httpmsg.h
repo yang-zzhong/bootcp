@@ -3,25 +3,41 @@
 #define _BOO_TCP_HTTP_MSG_H
 #include "msg.h"
 #include "httpmsgid.h"
+#include "httpparser.h"
+#include <string>
+#include <sstream>
+#include <map>
+#include <functional>
 
-namespace bootcp
+namespace boohttp
 {
-	class HttpMsg : public Msg
+	class Msg : public bootcp::Msg
 	{
 	public:
-		HttpMsg();
-		HttpMsg(std::string data);
-		~HttpMsg();
-		virtual char * data() const override;
-		virtual void recv(Sock fd) override;
-		virtual Msg * clone() override;
+		Msg();
+		~Msg();
+		virtual bool recv(Sock fd) override;
+		virtual bootcp::Msg * clone() override;
 		virtual void pack(char ** raw, int * len) override;
-		virtual MsgId * msgid() override;
+		virtual bootcp::MsgId * msgid() override;
 		virtual void reset() override;
-		virtual bool valid() override;
-		void write(std::string data);
+
 	private:
-        std::string _data = nullptr;
+		int onMsgBegin(http_parser * _);
+		int onHeadersComplete(http_parser * _);
+		int onMsgComplete(http_parser * _);
+		int onUrl(http_parser * _, const char * at, size_t length);
+		int onHeaderField(http_parser * _, const char * at, size_t length);
+		int onHeaderValue(http_parser * _, const char * at, size_t length);
+		int onBody(http_parser * _);
+
+		static void append(Sock fd, char * buf);
+		static void done(Sock fd, int len);
+
+	private:
+		static std::map<Sock, std::string> bufs;
+		static std::map<Sock, Msg *> recving;
+		unsigned int state = -1;
 	};
 }
 

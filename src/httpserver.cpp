@@ -1,22 +1,34 @@
 #include "httpserver.h"
 
-void bootcp::HttpServer::on(MsgId * msgid, std::function<bootcp::HttpResponse * (bootcp::HttpRequest * req)> handle)
+boohttp::Server::Server() : bootcp::Server::Server(&boohttp::Request())
+{
+    boohttp::Request req;
+    bootcp::Server::Server(&req);
+}
+
+boohttp::Server::Server(int port) : bootcp::Server::Server(&boohttp::Request(), port)
+{
+}
+
+boohttp::Server::~Server()
+{
+}
+
+void boohttp::Server::on(boohttp::MsgId * msgid, std::function<boohttp::Response * (boohttp::Request * req)> handle)
 {
     bootcp::Server::on(msgid, [handle](Sock fd, bootcp::Msg * msg, bootcp::BooTcp * handler) {
-        HttpMsg * hm = (HttpMsg *)msg;
-        Server * server = (bootcp::Server *)handler;
-        auto res = handle(hm->request());
+        boohttp::Request * req = (boohttp::Request*)msg;
+        auto res = handle(req);
         if (res == nullptr) {
-            res = HttpResponse::emptyResponse();
+            res = new boohttp::Response(req);
         }
-        server->send(fd, res->msg());
+        handler->send(fd, res);
         delete res;
     });
 }
 
-void bootcp::HttpServer::on(char * path, Method method, std::function<bootcp::HttpResponse * (bootcp::HttpRequest * req)> handle)
+void boohttp::Server::on(char * path, Method method, std::function<boohttp::Response * (boohttp::Request * req)> handle)
 {
-    HttpMsg * hm = new HttpMsg(path, method);
-    on(hm, handle);
-    delete hm;
+    boohttp::MsgId hm(path, method);
+    on(&hm, handle);
 }

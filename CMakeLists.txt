@@ -11,16 +11,20 @@ SET(INC_DIR include)
 SET(LIB_FILES ${SRC_DIR}/bootcp.cpp
     ${SRC_DIR}/client.cpp
     ${SRC_DIR}/server.cpp
-    ${SRC_DIR}/simplemsg.cpp)
+    ${SRC_DIR}/simplemsg.cpp
+    ${SRC_DIR}/httpparser.cpp
+    ${SRC_DIR}/httpmsgid.cpp
+    ${SRC_DIR}/httpmsg.cpp
+    ${SRC_DIR}/httpserver.cpp)
 
 INCLUDE_DIRECTORIES(${SRC_DIR} ${INC_DIR})
-
-ADD_LIBRARY(bootcp ${LIB_FILES})
 
 ADD_EXECUTABLE(main ${SRC_DIR}/main.cpp)
 
 IF (WIN32)
+    ADD_LIBRARY(bootcp ${LIB_FILES})
 	TARGET_LINK_LIBRARIES(main bootcp)
 ELSE ()
+    ADD_LIBRARY(bootcp SHARED ${LIB_FILES})
 	TARGET_LINK_LIBRARIES(main bootcp pthread)
 ENDIF ()
