@@ -1,15 +1,16 @@
 #include "httpserver.h"
 
-boohttp::Server::Server()
+boohttp::Server::Server() : bootcp::Server::Server()
 {
 	boohttp::Request req;
-	bootcp::Server::Server(&req);
+	msgTemplate(&req);
 }
 
-boohttp::Server::Server(int port)
+boohttp::Server::Server(int port) : bootcp::Server::Server()
 {
 	boohttp::Request req;
-	bootcp::Server::Server(&req, port);
+	msgTemplate(&req);
+	listen(port);
 }
 
 boohttp::Server::~Server()

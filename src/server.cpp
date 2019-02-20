@@ -1,6 +1,6 @@
 #include "server.h"
 
-bootcp::Server::Server()
+bootcp::Server::Server() : BooTcp()
 {
 }
 
@@ -37,14 +37,14 @@ bool bootcp::Server::listen(int port)
 		return true;
 	}
 	_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (sockerr(_fd)) {
+	if (somethingWrong(_fd)) {
 		return false;
 	}
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(port);
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	ecode = bind(_fd, (const sockaddr*)&addr, sizeof(addr));
+	ecode = ::bind(_fd, (const sockaddr*)&addr, sizeof(addr));
 	if (somethingWrong(ecode)) {
 		return false;
 	}
@@ -69,7 +69,7 @@ void bootcp::Server::accept()
 	struct sockaddr_in sockAddr;
 	while (_running) {
 		Sock client = ::accept(_fd, (sockaddr*)&sockAddr, &len);
-		if (sockerr(client)) {
+		if (somethingWrong(client)) {
 			continue;
 		}
 		_clock.lock();

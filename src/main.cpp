@@ -35,7 +35,10 @@ int http()
     });
 	char data[] = "GET /hello-world HTTP/1.0\r\nconTENT-Length: 5\r\n\r\nHELLO";
 	boohttp::Client c;
-	c.connect((char *)"127.0.0.1", 1111);
+	if (!c.connect((char *)"127.0.0.1", 1111)) {
+		cout << "connect error: " << c.strerr() << endl;
+		return -1;
+	}
 	boohttp::Request req;
 	req.method("GET");
 	req.path("/hello-world");

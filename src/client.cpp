@@ -28,18 +28,17 @@ bool bootcp::Client::connect(char * ip, int port)
 	if (_connected) {
 		return true;
 	}
-	strcmp(_ip, ip);
+	strcpy(_ip, ip);
 	_port = port;
 	_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (sockerr(_fd)) {
+	if (somethingWrong(_fd)) {
 		return false;
 	}
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(port);
 	addr.sin_addr.s_addr = inet_addr(ip);
-	_ecode = ::connect(_fd, (struct sockaddr *)&addr, sizeof(struct sockaddr));
-	if (_ecode < 0) {
+	if (somethingWrong(::connect(_fd, (struct sockaddr *)&addr, sizeof(struct sockaddr)))) {
 		return false;
 	}
 	_connected = true;

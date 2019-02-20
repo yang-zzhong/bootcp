@@ -1,6 +1,9 @@
 #include "bootcp.h"
 
-bootcp::BooTcp::BooTcp(){}
+bootcp::BooTcp::BooTcp()
+{
+	init();
+}
 
 void bootcp::BooTcp::msgTemplate(Msg * msg)
 {
@@ -10,7 +13,12 @@ void bootcp::BooTcp::msgTemplate(Msg * msg)
 
 bootcp::BooTcp::BooTcp(Msg * msg)
 {
+	init();
 	msgTemplate(msg);
+}
+
+void bootcp::BooTcp::init()
+{
 #ifdef WIN32  
 	_inited = false;
 	WORD wVersionRequested;
@@ -176,12 +184,12 @@ void bootcp::BooTcp::close(Sock fd)
 
 bootcp::BooTcp::~BooTcp()
 {
-	delete _msg;
-	auto wf = waits.begin();
-	while (wf++ != waits.end()) {
+	if (_msg != nullptr) {
+		delete _msg;
+	}
+	for (auto wf = waits.begin(); wf != waits.end(); ++wf) {
 		auto l = wf->second;
-		auto wm = wf->second.begin();
-		while (wm++ != wf->second.end()) {
+		for (auto wm = wf->second.begin(); wm != wf->second.end(); ++wm) {
 			delete *wm;
 			wf->second.erase(wm);
 		}

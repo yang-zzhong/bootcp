@@ -36,9 +36,10 @@ namespace bootcp
 		int ecode = 0;
 		std::string error;
 	private:
+		void init();
 		void asend(Sock fd, Msg * msg);
 	private:
-		Msg * _msg;
+		Msg * _msg = nullptr;
 		std::map<MsgId*, std::function<void(Sock fd, Msg * msg, BooTcp * handler)>> handlers;
 		std::map<Sock, std::list<MsgId*>> waits;
 		std::mutex _wlock;
