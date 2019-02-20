@@ -3,14 +3,31 @@
 
 #include "httpmsg.h"
 #include "httprequest.h"
+#include <sstream>
+
+#define CRLF "\r\t"
 
 namespace boohttp
 {
     class Response : public Msg
     {
     public:
-        Response(Request * req) {}
-        ~Response() {}
+		Response();
+		Response(Request * req);
+		~Response();
+		virtual void pack(char ** raw, int * len) override;
+		virtual bootcp::MsgId * msgid() override;
+		virtual bootcp::Msg * clone() override;
+
+		void statusCode(int code);
+		int statusCode();
+		std::string status();
+
+	protected:
+		virtual int onHeaderComplete(http_parser * _);
+	private:
+		Request * _req;
+		int _statusCode = 200;
     };
 }
 

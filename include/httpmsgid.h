@@ -8,18 +8,15 @@
 
 namespace boohttp
 {
-    typedef enum {POST, PUT, GET, DEL, PATCH, OPTION, CONNECT} Method;
-
     class MsgId : public bootcp::MsgId
     {
     public:
-        MsgId(char * path, Method method);
+        MsgId(std::string path, std::string method);
         ~MsgId();
         virtual bool match(bootcp::MsgId * msgid) override;
         virtual bootcp::MsgId * clone() override;
-    private:
-        char * path;
-        Method method;
+        std::string path;
+        std::string method;
 	};
 }
 

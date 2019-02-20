@@ -1,5 +1,9 @@
 #include "server.h"
 
+bootcp::Server::Server()
+{
+}
+
 bootcp::Server::Server(Msg * msg) : BooTcp(msg)
 {
 }
@@ -143,7 +147,7 @@ void bootcp::Server::recv(Sock client)
 		if ( !valid) {
 			break;
 		}
-		recvSock(client, this);
+		recvSock(client);
 	}
 }
 

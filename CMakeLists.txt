@@ -15,6 +15,9 @@ SET(LIB_FILES ${SRC_DIR}/bootcp.cpp
     ${SRC_DIR}/httpparser.cpp
     ${SRC_DIR}/httpmsgid.cpp
     ${SRC_DIR}/httpmsg.cpp
+    ${SRC_DIR}/httprequest.cpp
+    ${SRC_DIR}/httpresponse.cpp
+    ${SRC_DIR}/httpclient.cpp
     ${SRC_DIR}/httpserver.cpp)
 
 INCLUDE_DIRECTORIES(${SRC_DIR} ${INC_DIR})

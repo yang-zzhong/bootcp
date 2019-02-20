@@ -12,6 +12,8 @@
 #define TEST_MSG_ID 1
 #define TEST_CLOSE_ID 2
 
+using namespace std;
+
 int http();
 
 int main() 
@@ -22,16 +24,27 @@ int main()
 int http()
 {
     boohttp::Server s(1111);
-	boohttp::MsgId helloworld("/hello-world", boohttp::GET);
-    s.on(&helloworld, [](boohttp::Request * req) -> boohttp::Response * {
-		return nullptr;
+	boohttp::MsgId helloworld("/hello-world", "GET");
+    s.on(&helloworld, [](boohttp::Request * req, boohttp::Response * res) {
+		cout << "method: " << req->method() << endl;
+		cout << "path: " << req->path() << endl;
+		for (auto i = req->header()->begin(); i != req->header()->end(); ++i) {
+			cout << i->first << ": " << i->second << endl;
+		}
+		res->body("hello world");
     });
 	char data[] = "GET /hello-world HTTP/1.0\r\nconTENT-Length: 5\r\n\r\nHELLO";
-	bootcp::Client c(&bootcp::SimpleMsg());
+	boohttp::Client c;
 	c.connect((char *)"127.0.0.1", 1111);
-	while (true) {
-		::send(c.fd(), data, strlen(data), 0);
-	}
+	boohttp::Request req;
+	req.method("GET");
+	req.path("/hello-world");
+	req.header("content-type", "text/html");
+	req.header("content-length", "5");
+	req.body("HELLO");
+	c.send(&req, [](boohttp::Request * req, boohttp::Response *res) {
+		cout << "response: " << res->body() << endl;
+	});
 
 	return 0;
 }

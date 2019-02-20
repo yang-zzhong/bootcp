@@ -12,6 +12,7 @@ namespace bootcp
 	class Server : public BooTcp
 	{
 	public:
+		Server();
 		Server(Msg * msg);
 		Server(Msg * msg, int port);
 		bool ready();

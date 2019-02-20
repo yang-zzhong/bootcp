@@ -14,8 +14,9 @@ namespace boohttp
 	public:
 		Server();
 		Server(int port);
-        void on(MsgId * msgid, std::function<Response *(Request * req)>);
-        void on(char * path, Method method, std::function<Response *(Request * req)>);
+		void initParser();
+        void on(MsgId * msgid, std::function<void (Request * req, Response * res)>);
+        void on(std::string path, std::string method, std::function<void(Request * req, Response * res)>);
 		~Server();
 	};
 }

@@ -1,9 +1,16 @@
 #include "bootcp.h"
 
-bootcp::BooTcp::BooTcp(Msg * msg)
+bootcp::BooTcp::BooTcp(){}
+
+void bootcp::BooTcp::msgTemplate(Msg * msg)
 {
 	_msg = msg->clone();
 	_msg->reset();
+}
+
+bootcp::BooTcp::BooTcp(Msg * msg)
+{
+	msgTemplate(msg);
 #ifdef WIN32  
 	_inited = false;
 	WORD wVersionRequested;
@@ -102,7 +109,7 @@ void bootcp::BooTcp::on(MsgId * msgId, std::function<void(Sock fd, Msg * msg, bo
 	_hlock.unlock();
 }
 
-void bootcp::BooTcp::recvSock(Sock fd, bootcp::BooTcp * tcp)
+void bootcp::BooTcp::recvSock(Sock fd)
 {
 	auto msg = _msg->clone();
 	if (!msg->recv(fd)) {
@@ -122,7 +129,7 @@ void bootcp::BooTcp::recvSock(Sock fd, bootcp::BooTcp * tcp)
 		delete msgid;
 	}
 	_wlock.unlock();
-	onRecv(fd, msg, tcp);
+	onRecv(fd, msg);
 	delete msg;
 }
 
@@ -131,7 +138,7 @@ void bootcp::BooTcp::onNotExistHandler(std::function<void(Sock fd, Msg * msg, Bo
 	_notExistHandler = handle;
 }
 
-void bootcp::BooTcp::onRecv(Sock fd, Msg * msg, bootcp::BooTcp * tcp)
+void bootcp::BooTcp::onRecv(Sock fd, Msg * msg)
 {
 	_hlock.lock();
 	auto i = handlers.begin();
@@ -143,11 +150,11 @@ void bootcp::BooTcp::onRecv(Sock fd, Msg * msg, bootcp::BooTcp * tcp)
 			continue;
 		}
 		delete msgid;
-		i->second(fd, msg, tcp);
+		i->second(fd, msg, this);
 		break;
 	}
 	if (i == handlers.end() && _notExistHandler != nullptr) {
-		_notExistHandler(fd, msg, tcp);
+		_notExistHandler(fd, msg, this);
 	}
 	_hlock.unlock();
 }

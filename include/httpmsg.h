@@ -6,6 +6,7 @@
 #include "httpparser.h"
 #include <string>
 #include <sstream>
+#include <list>
 #include <map>
 #include <functional>
 
@@ -16,28 +17,46 @@ namespace boohttp
 	public:
 		Msg();
 		~Msg();
-		virtual bool recv(Sock fd) override;
-		virtual bootcp::Msg * clone() override;
-		virtual void pack(char ** raw, int * len) override;
-		virtual bootcp::MsgId * msgid() override;
+		virtual bootcp::Msg * clone() override = 0;
+		virtual void pack(char ** raw, int * len) override = 0;
+		virtual bootcp::MsgId * msgid() override = 0;
 		virtual void reset() override;
+		virtual bool recv(Sock fd) override;
+
+		std::map<std::string, std::string> * header();
+		void header(std::string f, std::string v);
+		std::string header(std::string f);
+		bool hasHeader(std::string f);
+		void removeHeader(std::string f);
+
+		void body(std::string body);
+		std::string body();
+
+		std::string path();
+		void path(std::string u);
+
+	protected:
+		virtual int onHeaderComplete(http_parser * _) = 0;
 
 	private:
-		int onMsgBegin(http_parser * _);
-		int onHeadersComplete(http_parser * _);
-		int onMsgComplete(http_parser * _);
-		int onUrl(http_parser * _, const char * at, size_t length);
-		int onHeaderField(http_parser * _, const char * at, size_t length);
-		int onHeaderValue(http_parser * _, const char * at, size_t length);
-		int onBody(http_parser * _);
-
-		static void append(Sock fd, char * buf);
+		void readBegin();
+		void readEnd();
+		void pushHeaderField(std::string field);
+		std::string popHeaderField();
+		static void initParserSettings(http_parser_settings * s);
+		static void append(Sock fd, const char * buf);
 		static void done(Sock fd, int len);
+
+	private:
+		std::map<std::string, std::string> _headers;
+		std::list<std::string> _hfields;
+		std::string _path;
+		std::string _body;
+		unsigned int state = -1;
 
 	private:
 		static std::map<Sock, std::string> bufs;
 		static std::map<Sock, Msg *> recving;
-		unsigned int state = -1;
 	};
 }
 

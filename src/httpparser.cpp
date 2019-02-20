@@ -2063,7 +2063,7 @@ reexecute:
    * we'd otherwise have (since CALLBACK_DATA() is meant to be run with a 'p'
    * value that's in-bounds).
    */
-/*
+
   assert(((header_field_mark ? 1 : 0) +
           (header_value_mark ? 1 : 0) +
           (url_mark ? 1 : 0)  +
@@ -2077,7 +2077,6 @@ reexecute:
   CALLBACK_DATA_NOADVANCE(status);
 
   RETURN(len);
-  */
 
 error:
   if (HTTP_PARSER_ERRNO(parser) == HPE_OK) {

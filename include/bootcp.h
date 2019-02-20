@@ -14,7 +14,9 @@ namespace bootcp
 	class BooTcp
 	{
 	public:
+		BooTcp();
 		BooTcp(Msg * msg);
+		void msgTemplate(Msg * msg);
 		void on(MsgId * msgid, std::function<void(Sock fd, Msg * msg, BooTcp * handler)> onMsg);
 		bool send(Sock fd, Msg * msg);
 		void asyncSend(Sock fd, Msg * msg);
@@ -27,8 +29,8 @@ namespace bootcp
 		~BooTcp();
 	protected:
 		bool somethingWrong(int ecode);
-		void onRecv(Sock fd, Msg * msg, BooTcp * bootcp);
-		void recvSock(Sock fd, BooTcp * bootcp);
+		void onRecv(Sock fd, Msg * msg);
+		void recvSock(Sock fd);
 		bool sockerr(Sock fd);
 		void read(Sock fd, char * buf, int len);
 		int ecode = 0;

@@ -15,6 +15,7 @@ namespace bootcp
 	class Client : public BooTcp
 	{
 	public:
+		Client();
 		Client(Msg * msg);
 		Client(Msg * msg, char * ip, int port);
 		bool connect(char * ip, int port);
