@@ -23,7 +23,7 @@ int main()
 
 int http()
 {
-		boohttp::Server s(1111);
+    boohttp::Server s(1111);
     boohttp::MsgId helloworld("/hello-world", "GET");
     s.on(&helloworld, [](boohttp::Request * req, boohttp::Response * res) {
         cout << "method: " << req->method() << endl;
