@@ -4,15 +4,13 @@
 #include "httpmsg.h"
 #include <sstream>
 
-#ifndef CRLF
-#define CRLF "\r\n"
-#endif
-
 namespace boohttp
 {
     class Request : public Msg
     {
     public:
+        Request();
+        ~Request();
         virtual bootcp::Msg * clone() override;
         virtual void pack(char ** raw, int * len) override;
         virtual bootcp::MsgId * msgid() override;

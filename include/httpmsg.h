@@ -10,6 +10,11 @@
 #include <map>
 #include <functional>
 #include <mutex>
+#include <algorithm>
+
+#ifndef CRLF
+ #define CRLF "\r\n"
+#endif
 
 namespace boohttp
 {
@@ -33,12 +38,16 @@ namespace boohttp
         void body(std::string body);
         std::string body();
 
+        unsigned short v_major = 2;
+        unsigned short v_minor = 0;
 
     protected:
         virtual int onHeaderComplete(http_parser * _) = 0;
         virtual void initParserSettings(http_parser_settings * s);
+        void _packMain(std::stringstream & s, char ** raw, int * len);
 
     private:
+        std::string upper(std::string);
         void readBegin();
         void readEnd();
         void pushHeaderField(std::string field);

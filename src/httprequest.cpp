@@ -1,5 +1,13 @@
 #include "httprequest.h"
 
+boohttp::Request::Request()
+{
+}
+
+boohttp::Request::~Request()
+{
+}
+
 bootcp::Msg * boohttp::Request::clone()
 {
     auto req = new boohttp::Request();
@@ -36,21 +44,8 @@ void boohttp::Request::initParserSettings(http_parser_settings * s)
 void boohttp::Request::pack(char ** raw, int * len)
 {
     std::stringstream ss;
-    ss << method() << " " << path() << " HTTP/1.1" << CRLF;
-    for (auto i : *header()) {
-      ss << i.first << ": " << i.second << CRLF;
-    }
-    ss << CRLF;
-    if (header("Transfer-Encoding") == "chunked") {
-        ss << std::hex << body().size() << std::dec << CRLF << body() << CRLF;
-    } else {
-        ss << body();
-    }
-    ss << "0" << CRLF << CRLF;
-    auto str = ss.str();
-    *len = str.length();
-    *raw = (char *)malloc(str.length() + 1);
-    memcpy(*raw, str.c_str(), str.length());
+    ss << method() << " " << path() << " HTTP/" << v_major << "." << v_minor << CRLF;
+    _packMain(ss, raw, len);
 }
 
 bootcp::MsgId * boohttp::Request::msgid()

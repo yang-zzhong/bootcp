@@ -30,7 +30,7 @@ boohttp::Response * boohttp::Client::waitResponse(boohttp::Request * req)
         while (i != _pairs.end() && i->first != req) {}
         if (i == _pairs.end()) {
             _plock.unlock();
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
             continue;
         }
         auto res = i->second;
@@ -55,6 +55,11 @@ void boohttp::Client::send(boohttp::Request * req, SendCallback handle)
 {
     send(req);
     boohttp::Response * res = waitResponse(req);
+    if (res == nullptr) {
+        _rlock.lock();
+        _reqs.pop_back();
+        _rlock.unlock();
+    }
     handle(req, res);
     delete res;
 }

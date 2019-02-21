@@ -19,10 +19,28 @@ void boohttp::Msg::reset()
     state = -1;
 }
 
+void boohttp::Msg::_packMain(std::stringstream & ss, char ** raw, int * len)
+{
+    for (auto i : *header()) {
+      ss << i.first << ": " << i.second << CRLF;
+    }
+    ss << CRLF;
+    if (header("Content-Length") == "") {
+        ss << std::hex << body().size() << std::dec << CRLF << body() << CRLF;
+    } else {
+        ss << body();
+    }
+    ss << "0" << CRLF << CRLF;
+    auto str = ss.str();
+    *len = str.length();
+    *raw = (char *)malloc(str.length() + 1);
+    memcpy(*raw, str.c_str(), str.length());
+}
+
 std::string boohttp::Msg::header(std::string key)
 {
     if (hasHeader(key)) {
-        return _headers[key];
+        return _headers[upper(key)];
     }
 
     return "";
@@ -30,12 +48,12 @@ std::string boohttp::Msg::header(std::string key)
 
 bool boohttp::Msg::hasHeader(std::string key)
 {
-    return _headers.find(key) != _headers.end();
+    return _headers.find(upper(key)) != _headers.end();
 }
 
 void boohttp::Msg::header(std::string key, std::string value)
 {
-    _headers[key] = value;
+    _headers[upper(key)] = value;
 }
 
 void boohttp::Msg::removeHeader(std::string key)
@@ -43,7 +61,7 @@ void boohttp::Msg::removeHeader(std::string key)
     if (!hasHeader(key)) {
         return;
     }
-    _headers.erase(key);
+    _headers.erase(upper(key));
 }
 
 std::map<std::string, std::string> * boohttp::Msg::header()
@@ -143,6 +161,8 @@ void boohttp::Msg::initParserSettings(http_parser_settings * s)
     };
     s->on_message_complete = [](http_parser * _) -> int {
         auto msg = static_cast<boohttp::Msg *>(_->data);
+        msg->v_major = _->http_major;
+        msg->v_minor = _->http_minor;
         msg->readEnd();
         return 0;
     };
@@ -160,3 +180,11 @@ void boohttp::Msg::done(Sock fd, int len)
 {
     bufs[fd] = bufs[fd].substr(len, bufs[fd].length() - len);
 }
+
+std::string boohttp::Msg::upper(std::string s)
+{
+    std::transform(s.begin(), s.end(), s.begin(), ::toupper);
+
+    return s;
+}
+

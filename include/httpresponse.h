@@ -5,9 +5,6 @@
 #include "httprequest.h"
 #include <sstream>
 
-#ifndef CRLF
-#define CRLF "\r\n"
-#endif
 
 namespace boohttp
 {
@@ -15,7 +12,6 @@ namespace boohttp
     {
     public:
         Response();
-        Response(Request * req);
         ~Response();
         virtual void pack(char ** raw, int * len) override;
         virtual bootcp::MsgId * msgid() override;

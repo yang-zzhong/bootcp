@@ -2,13 +2,6 @@
 
 boohttp::Response::Response()
 {
-    header("Transfer-Encoding", "chunked");
-}
-
-boohttp::Response::Response(boohttp::Request * req)
-{
-    header("Transfer-Encoding", "chunked");
-    _req = req;
 }
 
 boohttp::Response::~Response()
@@ -38,21 +31,8 @@ std::string boohttp::Response::status()
 void boohttp::Response::pack(char ** raw, int * len)
 {
     std::stringstream ss;
-    ss << "HTTP/1.1 " << statusCode() << " " << status() << CRLF;
-    for (auto i : *header()) {
-      ss << i.first << ": " << i.second << CRLF;
-    }
-    ss << CRLF;
-    if (header("Transfer-Encoding") == "chunked") {
-        ss << std::hex << body().length() << std::dec << CRLF << body() << CRLF;
-    } else {
-        ss << body();
-    }
-    ss << "0" << CRLF << CRLF;
-    auto str = ss.str();
-    *len = str.length();
-    *raw = (char *)malloc(str.length() + 1);
-    memcpy(*raw, str.c_str(), str.length());
+    ss << "HTTP/" << v_major << "." << v_minor << " " << statusCode() << " " << status() << CRLF;
+    _packMain(ss, raw, len);
 }
 
 int boohttp::Response::onHeaderComplete(http_parser * _)
@@ -62,11 +42,13 @@ int boohttp::Response::onHeaderComplete(http_parser * _)
 
 bootcp::Msg * boohttp::Response::clone()
 {
-    auto res = new boohttp::Response(_req);
+    auto res = new boohttp::Response();
     for(auto i = header()->begin(); i != header()->end(); ++i) {
         res->header(i->first, i->second);
     }
     res->body(body());
+    res->v_major = v_major;
+    res->v_minor = v_minor;
 
     return res;
 }

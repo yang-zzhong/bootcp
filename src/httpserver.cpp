@@ -21,7 +21,9 @@ void boohttp::Server::on(boohttp::MsgId * msgid, std::function<void(boohttp::Req
 {
     bootcp::Server::on(msgid, [handle](Sock fd, bootcp::Msg * msg, bootcp::BooTcp * handler) {
         boohttp::Request * req = (boohttp::Request*)msg;
-        boohttp::Response res(req);
+        boohttp::Response res;
+        res.v_major = req->v_major;
+        res.v_minor = req->v_minor;
         handle(req, &res);
         handler->send(fd, &res);
     });
