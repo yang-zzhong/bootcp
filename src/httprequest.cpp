@@ -13,6 +13,26 @@ bootcp::Msg * boohttp::Request::clone()
     return req;
 }
 
+void boohttp::Request::path(std::string path)
+{
+	_path = path;
+}
+
+std::string boohttp::Request::path()
+{
+	return _path;
+}
+
+void boohttp::Request::initParserSettings(http_parser_settings * s)
+{
+	boohttp::Msg::initParserSettings(s);
+	s->on_url = [](http_parser * _, const char * at, size_t length) -> int {
+		auto msg = static_cast<boohttp::Request *>(_->data);
+		msg->path(std::string(at, length));
+		return 0;
+	};
+}
+
 void boohttp::Request::pack(char ** raw, int * len)
 {
 	std::stringstream ss;

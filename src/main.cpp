@@ -33,7 +33,6 @@ int http()
 		}
 		res->body("hello world");
     });
-	char data[] = "GET /hello-world HTTP/1.0\r\nconTENT-Length: 5\r\n\r\nHELLO";
 	boohttp::Client c;
 	if (!c.connect((char *)"127.0.0.1", 1111)) {
 		cout << "connect error: " << c.strerr() << endl;
@@ -48,6 +47,7 @@ int http()
 	c.send(&req, [](boohttp::Request * req, boohttp::Response *res) {
 		cout << "response: " << res->body() << endl;
 	});
+	std::this_thread::sleep_for(std::chrono::seconds(1));
 
 	return 0;
 }

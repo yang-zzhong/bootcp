@@ -37,8 +37,9 @@ boohttp::Response * boohttp::Client::waitResponse(boohttp::Request * req)
 void boohttp::Client::send(boohttp::Request * req, std::function<void(boohttp::Request *req, boohttp::Response * res)> handle)
 {
 	send(req);
-	auto res = waitResponse(req);
+	boohttp::Response * res = waitResponse(req);
 	handle(req, res);
+	delete res;
 }
 
 void boohttp::Client::onRecv(Sock fd, bootcp::Msg * msg)
@@ -48,6 +49,6 @@ void boohttp::Client::onRecv(Sock fd, bootcp::Msg * msg)
 	_rlock.unlock();
 	_reqs.pop_back();
 	_plock.lock();
-	_pairs[req] = (boohttp::Response *)msg;
+	_pairs[req] = (boohttp::Response *)msg->clone();
 	_plock.unlock();
 }

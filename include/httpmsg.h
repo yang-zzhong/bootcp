@@ -9,6 +9,7 @@
 #include <list>
 #include <map>
 #include <functional>
+#include <mutex>
 
 namespace boohttp
 {
@@ -32,31 +33,27 @@ namespace boohttp
 		void body(std::string body);
 		std::string body();
 
-		std::string path();
-		void path(std::string u);
 
 	protected:
 		virtual int onHeaderComplete(http_parser * _) = 0;
+		virtual void initParserSettings(http_parser_settings * s);
 
 	private:
 		void readBegin();
 		void readEnd();
 		void pushHeaderField(std::string field);
 		std::string popHeaderField();
-		static void initParserSettings(http_parser_settings * s);
 		static void append(Sock fd, const char * buf);
 		static void done(Sock fd, int len);
 
 	private:
 		std::map<std::string, std::string> _headers;
 		std::list<std::string> _hfields;
-		std::string _path;
 		std::string _body;
 		unsigned int state = -1;
 
 	private:
 		static std::map<Sock, std::string> bufs;
-		static std::map<Sock, Msg *> recving;
 	};
 }
 

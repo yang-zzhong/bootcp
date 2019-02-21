@@ -18,7 +18,7 @@ namespace bootcp
 		BooTcp(Msg * msg);
 		void msgTemplate(Msg * msg);
 		void on(MsgId * msgid, std::function<void(Sock fd, Msg * msg, BooTcp * handler)> onMsg);
-		bool send(Sock fd, Msg * msg);
+		virtual bool send(Sock fd, Msg * msg);
 		void asyncSend(Sock fd, Msg * msg);
 		void onNotExistHandler(std::function<void(Sock fd, Msg *msg, BooTcp * handler)> handle);
 		void wait(Sock fd, MsgId * msgId);
@@ -29,8 +29,8 @@ namespace bootcp
 		~BooTcp();
 	protected:
 		bool somethingWrong(int ecode);
-		void onRecv(Sock fd, Msg * msg);
-		void recvSock(Sock fd);
+		virtual void onRecv(Sock fd, Msg * msg);
+		bool recvSock(Sock fd);
 		bool sockerr(Sock fd);
 		void read(Sock fd, char * buf, int len);
 		int ecode = 0;

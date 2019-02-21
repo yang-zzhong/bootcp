@@ -5,7 +5,9 @@
 #include "httprequest.h"
 #include <sstream>
 
-#define CRLF "\r\t"
+#ifndef CRLF
+#define CRLF "\r\n"
+#endif
 
 namespace boohttp
 {

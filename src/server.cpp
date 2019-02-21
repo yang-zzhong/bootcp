@@ -147,7 +147,9 @@ void bootcp::Server::recv(Sock client)
 		if ( !valid) {
 			break;
 		}
-		recvSock(client);
+		if (!recvSock(client)) {
+			break;
+		}
 	}
 }
 

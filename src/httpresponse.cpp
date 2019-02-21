@@ -2,10 +2,12 @@
 
 boohttp::Response::Response()
 {
+	header("Transfer-Encoding", "chunked");
 }
 
 boohttp::Response::Response(boohttp::Request * req)
 {
+	header("Transfer-Encoding", "chunked");
 	_req = req;
 }
 
@@ -42,7 +44,7 @@ void boohttp::Response::pack(char ** raw, int * len)
 	}
 	ss << CRLF;
     if (header("Transfer-Encoding") == "chunked") {
-		ss << std::hex << body().size() << std::dec << CRLF << body() << CRLF;
+		ss << std::hex << body().length() << std::dec << CRLF << body() << CRLF;
     } else {
 		ss << body();
     }
@@ -64,7 +66,6 @@ bootcp::Msg * boohttp::Response::clone()
     for(auto i = header()->begin(); i != header()->end(); ++i) {
         res->header(i->first, i->second);
     }
-    res->path(path());
     res->body(body());
 
     return res;

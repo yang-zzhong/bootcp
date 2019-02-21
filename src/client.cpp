@@ -65,9 +65,7 @@ bool bootcp::Client::connected()
 
 void bootcp::Client::recv()
 {
-	while (_connected) {
-		recvSock(_fd);
-	}
+	while (_connected && recvSock(_fd)) {}
 }
 
 bootcp::Client::~Client()

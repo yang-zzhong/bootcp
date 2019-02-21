@@ -89,7 +89,7 @@ bool bootcp::BooTcp::somethingWrong(int code)
         if (!FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
                            NULL,
                            ecode,
-                           MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // default language
+                           MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                            (LPTSTR)&err,
                            0,
                            NULL))
@@ -117,11 +117,11 @@ void bootcp::BooTcp::on(MsgId * msgId, std::function<void(Sock fd, Msg * msg, bo
 	_hlock.unlock();
 }
 
-void bootcp::BooTcp::recvSock(Sock fd)
+bool bootcp::BooTcp::recvSock(Sock fd)
 {
 	auto msg = _msg->clone();
 	if (!msg->recv(fd)) {
-		return;
+		return false;
 	}
 	_wlock.lock();
 	if (waits.find(fd) != waits.end() && !waits[fd].empty()) {
@@ -130,7 +130,7 @@ void bootcp::BooTcp::recvSock(Sock fd)
 		if (msgid->match(mmsgid)) {
 			delete mmsgid;
 			_wlock.unlock();
-			return;
+			return true;
 		}
 		delete mmsgid;
 		waits[fd].pop_front();
@@ -139,6 +139,7 @@ void bootcp::BooTcp::recvSock(Sock fd)
 	_wlock.unlock();
 	onRecv(fd, msg);
 	delete msg;
+	return true;
 }
 
 void bootcp::BooTcp::onNotExistHandler(std::function<void(Sock fd, Msg * msg, BooTcp *tcp)> handle)
@@ -187,6 +188,7 @@ bootcp::BooTcp::~BooTcp()
 	if (_msg != nullptr) {
 		delete _msg;
 	}
+	_wlock.lock();
 	for (auto wf = waits.begin(); wf != waits.end(); ++wf) {
 		auto l = wf->second;
 		for (auto wm = wf->second.begin(); wm != wf->second.end(); ++wm) {
@@ -195,6 +197,7 @@ bootcp::BooTcp::~BooTcp()
 		}
 		waits.erase(wf);
 	}
+	_wlock.unlock();
 #ifdef WIN32  
 	if (_inited) {
 		WSACleanup();

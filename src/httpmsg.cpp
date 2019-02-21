@@ -2,7 +2,6 @@
 #include "httpmsg.h"
 
 std::map<Sock, std::string> boohttp::Msg::bufs;
-std::map<Sock, boohttp::Msg*> boohttp::Msg::recving;
 
 boohttp::Msg::Msg()
 {
@@ -15,7 +14,6 @@ boohttp::Msg::~Msg()
 void boohttp::Msg::reset()
 {
 	_headers.erase(_headers.begin(), _headers.end());
-	_path = "";
 	_body = "";
 	_hfields.clear();
 	state = -1;
@@ -63,16 +61,6 @@ std::string boohttp::Msg::body()
 	return _body;
 }
 
-std::string boohttp::Msg::path()
-{
-	return _path;
-}
-
-void boohttp::Msg::path(std::string path)
-{
-	_path = path;
-}
-
 bool boohttp::Msg::recv(Sock fd)
 {
     http_parser_settings s;
@@ -84,11 +72,14 @@ bool boohttp::Msg::recv(Sock fd)
     while(true) {
         int read = 0;
         read = ::recv(fd, buf, 512, 0);    
+		if (read == 0) {
+			return false;
+		}
 		buf[512] = '\0';
 		append(fd, buf);
 		const char * data = bufs[fd].c_str();
 		size_t len = bufs[fd].length();
-		size_t r = http_parser_execute(&p, &s, data, len);
+		size_t r = http_parser_execute(&p, &s, data, read);
 		done(fd, r);
 		if (state == 1) {
 			break;
@@ -128,11 +119,6 @@ void boohttp::Msg::initParserSettings(http_parser_settings * s)
 		msg->readBegin();
 		return 0;
 	};
-	s->on_url = [](http_parser * _, const char * at, size_t length) -> int {
-		auto msg = static_cast<boohttp::Msg *>(_->data);
-		msg->path(std::string(at, length));
-		return 0;
-	};
 	s->on_header_field = [](http_parser * _, const char * at, size_t length) -> int {
 		auto msg = static_cast<boohttp::Msg *>(_->data);
 		msg->pushHeaderField(std::string(at, length));
@@ -167,9 +153,7 @@ void boohttp::Msg::append(Sock fd, const char * buf)
     if (bufs.find(fd) == bufs.end()) {
         bufs[fd] = "";
     }
-	int len = bufs[fd].length();
 	bufs[fd] += buf;
-	len = bufs[fd].length();
 }
 
 void boohttp::Msg::done(Sock fd, int len)
