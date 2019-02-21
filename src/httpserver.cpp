@@ -2,15 +2,15 @@
 
 boohttp::Server::Server() : bootcp::Server::Server()
 {
-	boohttp::Request req;
-	msgTemplate(&req);
+    boohttp::Request req;
+    msgTemplate(&req);
 }
 
 boohttp::Server::Server(int port) : bootcp::Server::Server()
 {
-	boohttp::Request req;
-	msgTemplate(&req);
-	listen(port);
+    boohttp::Request req;
+    msgTemplate(&req);
+    listen(port);
 }
 
 boohttp::Server::~Server()
@@ -21,7 +21,7 @@ void boohttp::Server::on(boohttp::MsgId * msgid, std::function<void(boohttp::Req
 {
     bootcp::Server::on(msgid, [handle](Sock fd, bootcp::Msg * msg, bootcp::BooTcp * handler) {
         boohttp::Request * req = (boohttp::Request*)msg;
-		boohttp::Response res(req);
+        boohttp::Response res(req);
         handle(req, &res);
         handler->send(fd, &res);
     });

@@ -18,6 +18,7 @@ SET(LIB_FILES ${SRC_DIR}/bootcp.cpp
     ${SRC_DIR}/httprequest.cpp
     ${SRC_DIR}/httpresponse.cpp
     ${SRC_DIR}/httpclient.cpp
+    ${SRC_DIR}/url.cpp
     ${SRC_DIR}/httpserver.cpp)
 
 INCLUDE_DIRECTORIES(${SRC_DIR} ${INC_DIR})

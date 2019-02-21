@@ -15,42 +15,42 @@ bootcp::Msg * boohttp::Request::clone()
 
 void boohttp::Request::path(std::string path)
 {
-	_path = path;
+    _path = path;
 }
 
 std::string boohttp::Request::path()
 {
-	return _path;
+    return _path;
 }
 
 void boohttp::Request::initParserSettings(http_parser_settings * s)
 {
-	boohttp::Msg::initParserSettings(s);
-	s->on_url = [](http_parser * _, const char * at, size_t length) -> int {
-		auto msg = static_cast<boohttp::Request *>(_->data);
-		msg->path(std::string(at, length));
-		return 0;
-	};
+    boohttp::Msg::initParserSettings(s);
+    s->on_url = [](http_parser * _, const char * at, size_t length) -> int {
+        auto msg = static_cast<boohttp::Request *>(_->data);
+        msg->path(std::string(at, length));
+        return 0;
+    };
 }
 
 void boohttp::Request::pack(char ** raw, int * len)
 {
-	std::stringstream ss;
-	ss << method() << " " << path() << " HTTP/1.1" << CRLF;
-	for (auto i : *header()) {
-	  ss << i.first << ": " << i.second << CRLF;
-	}
-	ss << CRLF;
+    std::stringstream ss;
+    ss << method() << " " << path() << " HTTP/1.1" << CRLF;
+    for (auto i : *header()) {
+      ss << i.first << ": " << i.second << CRLF;
+    }
+    ss << CRLF;
     if (header("Transfer-Encoding") == "chunked") {
-		ss << std::hex << body().size() << std::dec << CRLF << body() << CRLF;
+        ss << std::hex << body().size() << std::dec << CRLF << body() << CRLF;
     } else {
-		ss << body();
+        ss << body();
     }
     ss << "0" << CRLF << CRLF;
     auto str = ss.str();
-	*len = str.length();
-	*raw = (char *)malloc(str.length() + 1);
-	memcpy(*raw, str.c_str(), str.length());
+    *len = str.length();
+    *raw = (char *)malloc(str.length() + 1);
+    memcpy(*raw, str.c_str(), str.length());
 }
 
 bootcp::MsgId * boohttp::Request::msgid()
@@ -70,7 +70,7 @@ std::string boohttp::Request::method()
 
 int boohttp::Request::onHeaderComplete(http_parser * _)
 {
-	method(std::string(http_method_str((enum http_method) _->method)));
+    method(std::string(http_method_str((enum http_method) _->method)));
 
-	return 0;
+    return 0;
 }

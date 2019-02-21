@@ -17,7 +17,7 @@ namespace boohttp
         virtual bootcp::MsgId * clone() override;
         std::string path;
         std::string method;
-	};
+    };
 }
 
 #endif

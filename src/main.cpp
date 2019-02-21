@@ -31,6 +31,8 @@ int http()
 		for (auto i = req->header()->begin(); i != req->header()->end(); ++i) {
 			cout << i->first << ": " << i->second << endl;
 		}
+		cout << "body: " << req->body() << endl;
+		std::this_thread::sleep_for(std::chrono::seconds(40));
 		res->body("hello world");
     });
 	boohttp::Client c;
@@ -44,10 +46,14 @@ int http()
 	req.header("content-type", "text/html");
 	req.header("content-length", "5");
 	req.body("HELLO");
-	c.send(&req, [](boohttp::Request * req, boohttp::Response *res) {
+	c.asyncSend(&req, [&](boohttp::Request * req, boohttp::Response *res) {
+		if (res == nullptr) {
+			cout << "error: " << c.err() << " messge: " << c.strerr() << endl;
+			return;
+		}
 		cout << "response: " << res->body() << endl;
 	});
-	std::this_thread::sleep_for(std::chrono::seconds(1));
+	std::this_thread::sleep_for(std::chrono::seconds(40));
 
 	return 0;
 }

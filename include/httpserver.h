@@ -9,15 +9,15 @@
 
 namespace boohttp
 {
-	class Server : public bootcp::Server
-	{
-	public:
-		Server();
-		Server(int port);
-		void initParser();
+    class Server : public bootcp::Server
+    {
+    public:
+        Server();
+        Server(int port);
+        void initParser();
         void on(MsgId * msgid, std::function<void (Request * req, Response * res)>);
         void on(std::string path, std::string method, std::function<void(Request * req, Response * res)>);
-		~Server();
-	};
+        ~Server();
+    };
 }
 #endif

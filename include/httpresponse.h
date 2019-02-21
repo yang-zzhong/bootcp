@@ -14,22 +14,22 @@ namespace boohttp
     class Response : public Msg
     {
     public:
-		Response();
-		Response(Request * req);
-		~Response();
-		virtual void pack(char ** raw, int * len) override;
-		virtual bootcp::MsgId * msgid() override;
-		virtual bootcp::Msg * clone() override;
+        Response();
+        Response(Request * req);
+        ~Response();
+        virtual void pack(char ** raw, int * len) override;
+        virtual bootcp::MsgId * msgid() override;
+        virtual bootcp::Msg * clone() override;
 
-		void statusCode(int code);
-		int statusCode();
-		std::string status();
+        void statusCode(int code);
+        int statusCode();
+        std::string status();
 
-	protected:
-		virtual int onHeaderComplete(http_parser * _);
-	private:
-		Request * _req;
-		int _statusCode = 200;
+    protected:
+        virtual int onHeaderComplete(http_parser * _);
+    private:
+        Request * _req;
+        int _statusCode = 200;
     };
 }
 

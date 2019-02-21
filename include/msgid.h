@@ -3,12 +3,12 @@
 
 namespace bootcp
 {
-	class MsgId
-	{
-	public:
-		virtual bool match(MsgId * msgid) = 0;
-		virtual MsgId * clone() = 0;
-	};
+    class MsgId
+    {
+    public:
+        virtual bool match(MsgId * msgid) = 0;
+        virtual MsgId * clone() = 0;
+    };
 }
 
 #endif

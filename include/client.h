@@ -12,26 +12,26 @@
 
 namespace bootcp
 {
-	class Client : public BooTcp
-	{
-	public:
-		Client();
-		Client(Msg * msg);
-		Client(Msg * msg, char * ip, int port);
-		bool connect(char * ip, int port);
-		bool connected();
-		void close();
-		bool send(Msg * msg);
-		void wait(MsgId * msgid);
-		virtual Sock fd() override;
-		void recv();
-		~Client();
-	private:
-		Sock _fd = 0;
-		bool _connected = false;
-		int _ecode = 0;
-		char _ip[16];
-		int _port;
-	};
+    class Client : public BooTcp
+    {
+    public:
+        Client();
+        Client(Msg * msg);
+        Client(Msg * msg, char * ip, int port);
+        bool connect(char * ip, int port);
+        bool connected();
+        void close();
+        bool send(Msg * msg);
+        void wait(MsgId * msgid);
+        virtual Sock fd() override;
+        void recv();
+        ~Client();
+    private:
+        Sock _fd = 0;
+        bool _connected = false;
+        int _ecode = 0;
+        char _ip[16];
+        int _port;
+    };
 }
 #endif
