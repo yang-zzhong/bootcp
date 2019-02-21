@@ -18,6 +18,8 @@ namespace boohttp
         void on(MsgId * msgid, std::function<void (Request * req, Response * res)>);
         void on(std::string path, std::string method, std::function<void(Request * req, Response * res)>);
         ~Server();
+    private:
+        void init();
     };
 }
 #endif

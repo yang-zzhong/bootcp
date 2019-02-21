@@ -83,6 +83,11 @@ void bootcp::Server::accept()
     }
 }
 
+void bootcp::Server::wait()
+{
+    while (_running) { }
+}
+
 void bootcp::Server::enable(Sock fd)
 {
     if (!has(fd)) {

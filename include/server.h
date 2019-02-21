@@ -28,6 +28,7 @@ namespace bootcp
         void send(Msg * msg, std::set<Sock> fds);
         void broadcast(Msg * msg);
         void broadcast(Msg * msg, std::set<Sock> excepts);
+        void wait();
         Sock fd() override;
         ~Server();
     private:

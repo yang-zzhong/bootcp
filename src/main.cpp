@@ -32,28 +32,28 @@ int http()
             cout << i->first << ": " << i->second << endl;
         }
         cout << "body: " << req->body() << endl;
-        std::this_thread::sleep_for(std::chrono::seconds(40));
+        res->header("Transfer-Encoding", "chunked");
+        // std::this_thread::sleep_for(std::chrono::seconds(40));
         res->body("hello world");
     });
-    boohttp::Client c;
-    if (!c.connect((char *)"127.0.0.1", 1111)) {
-        cout << "connect error: " << c.strerr() << endl;
-        return -1;
-    }
-    boohttp::Request req;
-    req.method("GET");
-    req.path("/hello-world");
-    req.header("content-type", "text/html");
-    req.header("content-length", "5");
-    req.body("HELLO");
-    c.asyncSend(&req, [&](boohttp::Request * req, boohttp::Response *res) {
-        if (res == nullptr) {
-            cout << "error: " << c.err() << " messge: " << c.strerr() << endl;
-            return;
-        }
-        cout << "response: " << res->body() << endl;
-    });
-    std::this_thread::sleep_for(std::chrono::seconds(40));
+    // boohttp::Client c;
+    // if (!c.connect((char *)"192.168.0.173", 80)) {
+    //     cout << "connect error: " << c.strerr() << endl;
+    //     return -1;
+    // }
+    // boohttp::Request req;
+    // req.method("GET");
+    // req.path("/");
+    // req.header("content-type", "text/html");
+    // c.send(&req, [&](boohttp::Request * req, boohttp::Response *res) {
+    //     if (res == nullptr) {
+    //         cout << "error: " << c.err() << " messge: " << c.strerr() << endl;
+    //         return;
+    //     }
+    //     cout << "response: " << res->body() << endl;
+    // });
+
+    s.wait();
 
     return 0;
 }

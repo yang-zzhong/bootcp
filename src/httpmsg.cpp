@@ -21,16 +21,19 @@ void boohttp::Msg::reset()
 
 void boohttp::Msg::_packMain(std::stringstream & ss, char ** raw, int * len)
 {
+    bool chunked = header("Transfer-Encoding") == "chunked";
+    if (!chunked && header("Content-Length") == "" && body().length() > 0) {
+        header("Content-Length", std::to_string(body().length()));
+    }
     for (auto i : *header()) {
       ss << i.first << ": " << i.second << CRLF;
     }
     ss << CRLF;
-    if (header("Content-Length") == "") {
-        ss << std::hex << body().size() << std::dec << CRLF << body() << CRLF;
+    if(chunked) {
+        ss << std::hex << body().size() << std::dec << CRLF << body() << CRLF << "0" << CRLF << CRLF;
     } else {
         ss << body();
     }
-    ss << "0" << CRLF << CRLF;
     auto str = ss.str();
     *len = str.length();
     *raw = (char *)malloc(str.length() + 1);
@@ -39,21 +42,28 @@ void boohttp::Msg::_packMain(std::stringstream & ss, char ** raw, int * len)
 
 std::string boohttp::Msg::header(std::string key)
 {
-    if (hasHeader(key)) {
-        return _headers[upper(key)];
+    for (auto h = _headers.begin(); h != _headers.end(); ++h) {
+        if (upper(h->first) == upper(key)) {
+            return h->second;
+        }
     }
-
     return "";
 }
 
 bool boohttp::Msg::hasHeader(std::string key)
 {
-    return _headers.find(upper(key)) != _headers.end();
+    for (auto h = _headers.begin(); h != _headers.end(); ++h) {
+        if (upper(h->first) == upper(key)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void boohttp::Msg::header(std::string key, std::string value)
 {
-    _headers[upper(key)] = value;
+    _headers[key] = value;
 }
 
 void boohttp::Msg::removeHeader(std::string key)
@@ -61,7 +71,7 @@ void boohttp::Msg::removeHeader(std::string key)
     if (!hasHeader(key)) {
         return;
     }
-    _headers.erase(upper(key));
+    _headers.erase(key);
 }
 
 std::map<std::string, std::string> * boohttp::Msg::header()
