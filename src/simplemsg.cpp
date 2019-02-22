@@ -73,7 +73,7 @@ bootcp::MsgId * bootcp::SimpleMsg::msgid()
 bool bootcp::SimpleMsg::recv(Sock fd)
 {
     char header[MSG_HEADER_LEN];
-    read(fd, (char *)header, MSG_HEADER_LEN);
+    readL(fd, (char *)header, MSG_HEADER_LEN);
     memcpy(begin, header, 2);
     memcpy(&id, header + 2, 4);
     memcpy(&length, header + 6, 4);
@@ -81,16 +81,16 @@ bool bootcp::SimpleMsg::recv(Sock fd)
     if (!valid()) {
         return false;
     }
-    read(fd, initData(), length);
+    readL(fd, initData(), length);
 
     return true;
 }
 
-void bootcp::SimpleMsg::read(Sock fd, char * buf, int len)
+void bootcp::SimpleMsg::readL(Sock fd, char * buf, int len)
 {
     int read = 0;
     while (read < len) {
-        read += ::recv(fd, buf + read, len - read, 0);
+        read += read(fd, buf + read, len - read, 0);
     }
 }
 

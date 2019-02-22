@@ -30,7 +30,7 @@ namespace bootcp
     private:
         bool valid();
         char *initData();
-        void read(Sock fd, char * buf, int len);
+        void readL(Sock fd, char * buf, int len);
     private:
         char * _data = nullptr;
     };

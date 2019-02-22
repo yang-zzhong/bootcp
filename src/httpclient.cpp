@@ -55,6 +55,9 @@ void boohttp::Client::send(boohttp::Request * req, SendCallback handle)
 {
     send(req);
     boohttp::Response * res = waitResponse(req);
+    if (res->headerLike("Connection", "close")) {
+        close();
+    }
     if (res == nullptr) {
         _rlock.lock();
         _reqs.pop_back();

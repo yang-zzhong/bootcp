@@ -7,6 +7,7 @@
 #include "httprequest.h"
 #include "httpresponse.h"
 
+
 namespace boohttp
 {
     class Server : public bootcp::Server
@@ -15,8 +16,8 @@ namespace boohttp
         Server();
         Server(int port);
         void initParser();
-        void on(MsgId * msgid, std::function<void (Request * req, Response * res)>);
-        void on(std::string path, std::string method, std::function<void(Request * req, Response * res)>);
+        void on(MsgId * msgid, std::function<void(Request *, Response *)>);
+        void on(std::string path, std::string method, std::function<void(Request *, Response *)>);
         ~Server();
     private:
         void init();

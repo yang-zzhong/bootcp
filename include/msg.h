@@ -8,6 +8,7 @@
 #include <string>
 
 #include "msgid.h"
+#include "ssl.h"
 
 #ifdef WIN32  
  #pragma comment(lib, "ws2_32.lib")
@@ -32,11 +33,17 @@ namespace bootcp
     class Msg
     {
     public:
+        void withSSL(SSL * ssl);
         virtual bool recv(Sock fd) = 0;
         virtual Msg * clone() = 0;
         virtual void pack(char ** buf, int * len) = 0;
         virtual MsgId * msgid() = 0;
         virtual void reset() = 0;
+    protected:
+        size_t read(Sock fd, char * buf, int len);
+        size_t write(Sock fd, char * buf, int len);
+    private:
+        SSL * _ssl;
     };
 
 }

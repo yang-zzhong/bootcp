@@ -5,10 +5,23 @@ bootcp::BooTcp::BooTcp()
     init();
 }
 
+void bootcp::BooTcp::withSSL(std::string cert, std::string key)
+{
+    _ssl_cert = cert;
+    _ssl_key = key;
+    _ssl = new SSL(cert, key);
+    if (_msg != nullptr) {
+        _msg->withSSL(_ssl);
+    }
+}
+
 void bootcp::BooTcp::msgTemplate(Msg * msg)
 {
     _msg = msg->clone();
     _msg->reset();
+    if (_ssl) {
+        _msg->withSSL(_ssl);
+    }
 }
 
 bootcp::BooTcp::BooTcp(Msg * msg)
@@ -61,9 +74,12 @@ bool bootcp::BooTcp::send(Sock fd, Msg * msg)
     char * raw;
     int len;
     msg->pack(&raw, &len);
-    int ret = ::send(fd, raw, len, 0);
-    delete raw;
-
+    if (_ssl != nullptr) {
+        _ssl->send(fd, raw, len, 0);
+        delete raw;
+        return;
+    }
+    int ret = ::send();
     return !somethingWrong(ret);
 }
 
@@ -110,7 +126,7 @@ bool bootcp::BooTcp::somethingWrong(int code)
 #endif
 }
 
-void bootcp::BooTcp::on(MsgId * msgId, std::function<void(Sock fd, Msg * msg, bootcp::BooTcp * tcp)> onMsg)
+void bootcp::BooTcp::on(MsgId * msgId, std::function<void(Sock, Msg*, BooTcp *)> onMsg)
 {
     _hlock.lock();
     handlers[msgId->clone()] = onMsg;
@@ -142,7 +158,7 @@ bool bootcp::BooTcp::recvSock(Sock fd)
     return true;
 }
 
-void bootcp::BooTcp::onNotExistHandler(std::function<void(Sock fd, Msg * msg, BooTcp *tcp)> handle)
+void bootcp::BooTcp::onNotExistHandler(std::function<void(Sock, Msg*, bootcp::BooTcp *)> handle)
 {
     _notExistHandler = handle;
 }
@@ -198,6 +214,9 @@ bootcp::BooTcp::~BooTcp()
         waits.erase(wf);
     }
     _wlock.unlock();
+    if (_ssl != nullptr) {
+        delete _ssl;
+    }
 #ifdef WIN32  
     if (_inited) {
         WSACleanup();

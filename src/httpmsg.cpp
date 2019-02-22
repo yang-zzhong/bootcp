@@ -21,8 +21,11 @@ void boohttp::Msg::reset()
 
 void boohttp::Msg::_packMain(std::stringstream & ss, char ** raw, int * len)
 {
+    if (body().length() == 0) {
+        header("Transfer-Encoding", "chunked");
+    }
     bool chunked = header("Transfer-Encoding") == "chunked";
-    if (!chunked && header("Content-Length") == "" && body().length() > 0) {
+    if (!chunked && header("Content-Length") == "") {
         header("Content-Length", std::to_string(body().length()));
     }
     for (auto i : *header()) {
@@ -99,11 +102,11 @@ bool boohttp::Msg::recv(Sock fd)
     char buf[513];
     while(true) {
         int read = 0;
-        read = ::recv(fd, buf, 512, 0);    
+        read = read(fd, buf, 512, 0);    
         if (read == 0) {
             return false;
         }
-        buf[512] = '\0';
+        buf[read] = '\0';
         append(fd, buf);
         const char * data = bufs[fd].c_str();
         size_t len = bufs[fd].length();
@@ -139,6 +142,16 @@ std::string boohttp::Msg::popHeaderField()
     return val;
 }
 
+std::string boohttp::Msg::version()
+{
+    return std::to_string(v_major) + "." + std::to_string(v_minor);
+}
+
+bool boohttp::Msg::headerLike(std::string field, std::string value)
+{
+    return upper(header(field)) == upper(value);
+}
+
 void boohttp::Msg::initParserSettings(http_parser_settings * s)
 {
     memset(s, 0, sizeof(*s));
@@ -162,6 +175,16 @@ void boohttp::Msg::initParserSettings(http_parser_settings * s)
         while (!msg->_hfields.empty()) {
             msg->header(msg->popHeaderField(), "");
         }
+        msg->v_major = _->http_major;
+        msg->v_minor = _->http_minor;
+        std::string conn = msg->header("Connection");
+        if (!msg->hasHeader("Connection")) {
+            if (msg->version() == "1.0") {
+                msg->header("Connection", "close");
+            } else {
+                msg->header("Connection", "Keep-Alive");
+            }
+        }
         return msg->onHeaderComplete(_);
     };
     s->on_body = [](http_parser * _, const char * at, size_t length) -> int {
@@ -171,8 +194,6 @@ void boohttp::Msg::initParserSettings(http_parser_settings * s)
     };
     s->on_message_complete = [](http_parser * _) -> int {
         auto msg = static_cast<boohttp::Msg *>(_->data);
-        msg->v_major = _->http_major;
-        msg->v_minor = _->http_minor;
         msg->readEnd();
         return 0;
     };

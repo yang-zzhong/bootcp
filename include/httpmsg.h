@@ -33,10 +33,13 @@ namespace boohttp
         void header(std::string f, std::string v);
         std::string header(std::string f);
         bool hasHeader(std::string f);
+        bool headerLike(std::string, std::string);
         void removeHeader(std::string f);
 
         void body(std::string body);
         std::string body();
+
+        std::string version();
 
         unsigned short v_major = 2;
         unsigned short v_minor = 0;

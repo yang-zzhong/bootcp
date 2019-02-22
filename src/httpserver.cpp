@@ -26,6 +26,9 @@ void boohttp::Server::init()
         res.v_minor = req->v_minor;
         res.statusCode(404);
         handler->send(fd, &res);
+        if (req->headerLike("Connection", "close")) {
+            handler->close(fd);
+        }
     });
 }
 
@@ -38,6 +41,9 @@ void boohttp::Server::on(boohttp::MsgId * msgid, std::function<void(boohttp::Req
         res.v_minor = req->v_minor;
         handle(req, &res);
         handler->send(fd, &res);
+        if (req->headerLike("Connection", "close")) {
+            handler->close(fd);
+        }
     });
 }
 

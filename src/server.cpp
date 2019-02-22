@@ -72,6 +72,9 @@ void bootcp::Server::accept()
         if (somethingWrong(client)) {
             continue;
         }
+        if (_ssl != nullptr) {
+            acceptSSL(fd);
+        }
         _clock.lock();
         clients[client] = true;
         _clock.unlock();

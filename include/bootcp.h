@@ -17,10 +17,12 @@ namespace bootcp
         BooTcp();
         BooTcp(Msg * msg);
         void msgTemplate(Msg * msg);
-        void on(MsgId * msgid, std::function<void(Sock fd, Msg * msg, BooTcp * handler)> onMsg);
-        virtual bool send(Sock fd, Msg * msg);
+        void on(MsgId * msgid,  std::function<void(Sock, Msg*, BooTcp *)>);
+        bool send(Sock fd, Msg * msg);
         void asyncSend(Sock fd, Msg * msg);
-        void onNotExistHandler(std::function<void(Sock fd, Msg *msg, BooTcp * handler)> handle);
+        void withSSL(std::string cert, std::string key);
+        void ssl(Sock fd);
+        void onNotExistHandler(std::function<void(Sock, Msg *, BooTcp *)>);
         void wait(Sock fd, MsgId * msgId);
         void close(Sock fd);
         int err();
@@ -40,12 +42,15 @@ namespace bootcp
         void asend(Sock fd, Msg * msg);
     private:
         Msg * _msg = nullptr;
-        std::map<MsgId*, std::function<void(Sock fd, Msg * msg, BooTcp * handler)>> handlers;
+        std::map<MsgId*, std::function<void(Sock, Msg*, BooTcp *)>> handlers;
         std::map<Sock, std::list<MsgId*>> waits;
         std::mutex _wlock;
         std::mutex _hlock;
+        std::string _ssl_cert;
+        std::string _ssl_key;
+        SSL * _ssl;
         bool _inited = false;
-        std::function<void(Sock fd, Msg * msg, BooTcp * handler)> _notExistHandler = nullptr;
+        std::function<void(Sock, Msg*, BooTcp *)> _notExistHandler = nullptr;
     };
 }
 
