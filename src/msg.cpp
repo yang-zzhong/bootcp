@@ -11,7 +11,7 @@ size_t bootcp::Msg::read(Sock fd, char * buf, int len)
         return _ssl->read(fd, buf, len);
     }
 
-    return ::recv(fd, buf, len);
+    return ::recv(fd, buf, len, 0);
 }
 
 size_t bootcp::Msg::write(Sock fd, char * buf, int len)
@@ -20,5 +20,5 @@ size_t bootcp::Msg::write(Sock fd, char * buf, int len)
         return _ssl->read(fd, buf, len);
     }
 
-    return ::send(fd, buf, len);
+    return ::send(fd, buf, len, 0);
 }

@@ -101,17 +101,17 @@ bool boohttp::Msg::recv(Sock fd)
     p.data = this;
     char buf[513];
     while(true) {
-        int read = 0;
-        read = read(fd, buf, 512, 0);    
-        if (read == 0) {
+        int r = 0;
+        r = read(fd, buf, 512);    
+        if (r == 0) {
             return false;
         }
-        buf[read] = '\0';
+        buf[r] = '\0';
         append(fd, buf);
         const char * data = bufs[fd].c_str();
         size_t len = bufs[fd].length();
-        size_t r = http_parser_execute(&p, &s, data, read);
-        done(fd, r);
+        size_t parsed = http_parser_execute(&p, &s, data, r);
+        done(fd, parsed);
         if (state == 1) {
             break;
         }

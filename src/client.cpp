@@ -34,6 +34,7 @@ bool bootcp::Client::connect(char * ip, int port)
     if (somethingWrong(_fd)) {
         return false;
     }
+    maybeSSL(_fd);
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);

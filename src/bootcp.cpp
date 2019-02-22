@@ -5,11 +5,11 @@ bootcp::BooTcp::BooTcp()
     init();
 }
 
-void bootcp::BooTcp::withSSL(std::string cert, std::string key)
+void bootcp::BooTcp::withSSL(std::string cert, std::string key, SSL_METHOD * method)
 {
     _ssl_cert = cert;
     _ssl_key = key;
-    _ssl = new SSL(cert, key);
+    _ssl = new SSL(cert, key, method);
     if (_msg != nullptr) {
         _msg->withSSL(_ssl);
     }
@@ -75,12 +75,21 @@ bool bootcp::BooTcp::send(Sock fd, Msg * msg)
     int len;
     msg->pack(&raw, &len);
     if (_ssl != nullptr) {
-        _ssl->send(fd, raw, len, 0);
+        _ssl->write(fd, raw, len);
         delete raw;
+        return true;
+    }
+    int ret = ::send(fd, raw, len, 0);
+    delete raw;
+    return !somethingWrong(ret);
+}
+
+void bootcp::BooTcp::maybeSSL(Sock fd)
+{
+    if (_ssl == nullptr) {
         return;
     }
-    int ret = ::send();
-    return !somethingWrong(ret);
+    _ssl->accept(fd);
 }
 
 void bootcp::BooTcp::asyncSend(Sock fd, Msg * msg)

@@ -1,6 +1,7 @@
+
+#include <iostream>
 #include "server.h"
 #include "client.h"
-#include <iostream>
 #include "simplemsgid.h"
 #include "simplemsg.h"
 #include "httpserver.h"
@@ -36,8 +37,9 @@ int http()
         // std::this_thread::sleep_for(std::chrono::seconds(40));
         res->body("hello world");
     });
+    
     boohttp::Client c;
-    if (!c.connect((char *)"192.168.0.173", 80)) {
+    if (!c.connect((char *)"127.0.0.1", 1111)) {
         cout << "connect error: " << c.strerr() << endl;
         return -1;
     }

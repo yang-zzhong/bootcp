@@ -88,9 +88,9 @@ bool bootcp::SimpleMsg::recv(Sock fd)
 
 void bootcp::SimpleMsg::readL(Sock fd, char * buf, int len)
 {
-    int read = 0;
-    while (read < len) {
-        read += read(fd, buf + read, len - read, 0);
+    int r = 0;
+    while (r < len) {
+        r += read(fd, buf + r, len - r);
     }
 }
 
