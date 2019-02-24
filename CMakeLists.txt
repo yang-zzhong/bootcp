@@ -8,11 +8,8 @@ SET(CMAKE_BUILD_TYPE Debug)
 SET(SRC_DIR src)
 SET(INC_DIR include)
 
-SET(LIB_FILES ${SRC_DIR}/ssl.cpp
-    ${SRC_DIR}/bootcp.cpp
-    ${SRC_DIR}/client.cpp
-    ${SRC_DIR}/server.cpp
-    ${SRC_DIR}/msg.cpp
+SET(LIB_FILES ${SRC_DIR}/tcpconn.cpp
+    ${SRC_DIR}/sslconn.cpp
     ${SRC_DIR}/simplemsg.cpp
     ${SRC_DIR}/httpparser.cpp
     ${SRC_DIR}/httpmsgid.cpp

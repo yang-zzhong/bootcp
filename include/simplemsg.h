@@ -16,7 +16,7 @@ namespace bootcp
         SimpleMsg(int id, char * buf);
         ~SimpleMsg();
         char * data() const;
-        virtual bool recv(Sock fd) override;
+        virtual bool recv(Conn * conn) override;
         virtual Msg * clone() override;
         virtual void pack(char ** raw, int * len) override;
         virtual MsgId * msgid() override;
@@ -30,7 +30,7 @@ namespace bootcp
     private:
         bool valid();
         char *initData();
-        void readL(Sock fd, char * buf, int len);
+        void readL(Conn *, char * buf, int len);
     private:
         char * _data = nullptr;
     };

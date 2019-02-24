@@ -40,7 +40,7 @@ int http()
     
     boohttp::Client c;
     if (!c.connect((char *)"127.0.0.1", 1111)) {
-        cout << "connect error: " << c.strerr() << endl;
+        cout << "connect error: " << c.str() << endl;
         return -1;
     }
     boohttp::Request req;
@@ -49,7 +49,7 @@ int http()
     req.header("content-type", "text/html");
     c.send(&req, [&](boohttp::Request * req, boohttp::Response *res) {
         if (res == nullptr) {
-            cout << "error: " << c.err() << " messge: " << c.strerr() << endl;
+            cout << "error: " << c.code() << " messge: " << c.str() << endl;
             return;
         }
         cout << "response: " << res->body() << endl;
@@ -66,7 +66,7 @@ int simple()
     bootcp::SimpleMsg temp;
     bootcp::SimpleMsgId msgid(TEST_MSG_ID);
     bootcp::SimpleMsgId closeid(TEST_CLOSE_ID);
-    bootcp::Server server(&temp, 1111);
+    bootcp::Server<bootcp::SimpleMsg> server(1111);
     if (!server.ready()) {
         std::cout << "server startup error" << std::endl;
         return -1;
@@ -75,7 +75,7 @@ int simple()
         std::cout << "connection: " << client << std::endl;
         return true;
     });
-    server.on(&msgid, [](Sock client, bootcp::Msg * msg, bootcp::BooTcp * tcp) {
+    server.on(&msgid, [&](Sock client, bootcp::Msg * msg) {
         auto m = (bootcp::SimpleMsg*)msg;
         char * data = m->data();
         if (data == nullptr) {
@@ -83,19 +83,18 @@ int simple()
             return;
         }
         std::cout << "message from client: " << data << std::endl;
-        auto server = (bootcp::Server*)tcp;
-        server->broadcast(msg);
+        server.broadcast(msg);
     });
-    server.on(&closeid, [](Sock client, bootcp::Msg *msg, bootcp::BooTcp * tcp) {
+    server.on(&closeid, [](Sock client, bootcp::Msg *msg) {
         auto server = (bootcp::Server*)tcp;
-        server->stop();
+        server.stop();
     });
-    bootcp::Client client(&temp, (char *)"127.0.0.1", 1111);
+    bootcp::Client<SimpleMsg> client((char *)"127.0.0.1", 1111);
     if (!client.connected()) {
         std::cout << "connect error" << std::endl;
         return -1;
     }
-    client.on(&msgid, [](Sock server, bootcp::Msg * msg, bootcp::BooTcp * tcp) {
+    client.on(&msgid, [](Sock server, bootcp::Msg * msg) {
         auto m = (bootcp::SimpleMsg*)msg;
         std::cout << "message from server: " << m->data() << std::endl;
     });
@@ -109,7 +108,7 @@ int simple()
             msg.id = TEST_MSG_ID;
         }
         if (!client.send(&msg)) {
-            std::cout << "send errno: " << client.err() << " msg: " << client.strerr() << std::endl;
+            std::cout << "send errno: " << client.code() << " msg: " << client.str() << std::endl;
         }
     }
 

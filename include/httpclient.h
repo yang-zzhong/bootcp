@@ -9,7 +9,8 @@
 namespace boohttp
 {
     typedef std::function<void(boohttp::Request *req, boohttp::Response * res)> SendCallback;
-    class Client : public bootcp::Client
+
+    class Client : public bootcp::Client<boohttp::Response>
     {
     public:
         Client();

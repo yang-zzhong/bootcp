@@ -27,7 +27,7 @@ namespace boohttp
         virtual void pack(char ** raw, int * len) override = 0;
         virtual bootcp::MsgId * msgid() override = 0;
         virtual void reset() override;
-        virtual bool recv(Sock fd) override;
+        virtual bool recv(bootcp::Conn * conn) override;
 
         std::map<std::string, std::string> * header();
         void header(std::string f, std::string v);
@@ -55,8 +55,8 @@ namespace boohttp
         void readEnd();
         void pushHeaderField(std::string field);
         std::string popHeaderField();
-        static void append(Sock fd, const char * buf);
-        static void done(Sock fd, int len);
+        static void append(bootcp::Conn *, const char * buf);
+        static void done(bootcp::Conn *, int len);
 
     private:
         std::map<std::string, std::string> _headers;
@@ -65,7 +65,7 @@ namespace boohttp
         unsigned int state = -1;
 
     private:
-        static std::map<Sock, std::string> bufs;
+        static std::map<bootcp::Conn *, std::string> bufs;
     };
 }
 

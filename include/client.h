@@ -8,24 +8,74 @@
 
 
 #include "bootcp.h"
+#include "openssl/ssl.h"
+
 #include <thread>
 
 namespace bootcp
 {
-    class Client : public BooTcp
+    template<class T> class Client : public BooTcp<T>
     {
     public:
-        Client();
-        Client(Msg * msg);
-        Client(Msg * msg, char * ip, int port);
-        bool connect(char * ip, int port);
-        bool connected();
-        void close();
-        bool send(Msg * msg);
-        void wait(MsgId * msgid);
-        virtual Sock fd() override;
-        void recv();
-        ~Client();
+        Client() : BooTcp<T>() {};
+        Client(char * ip, int port) : BooTcp<T>()
+        {
+            connect(ip, port);
+        };
+        bool connect(char * ip, int port)
+        {
+            if (_connected) {
+                return true;
+            }
+            strcpy(_ip, ip);
+            _port = port;
+            _fd = socket(AF_INET, SOCK_STREAM, 0);
+            if (!bootcp::BooTcp<T>::isOK(_fd)) {
+                return false;
+            }
+            struct sockaddr_in addr;
+            addr.sin_family = AF_INET;
+            addr.sin_port = htons(port);
+            addr.sin_addr.s_addr = inet_addr(ip);
+            if (!BooTcp<T>::isOK(::connect(_fd, (struct sockaddr *)&addr, sizeof(struct sockaddr)))) {
+                return false;
+            }
+            BooTcp<T>::newConn(_fd);
+            _connected = true;
+            std::thread recv(&Client<T>::recv, this);
+            recv.detach();
+
+            return true;
+        };
+        bool connected()
+        {
+            return _connected;
+        };
+        void close()
+        {
+            BooTcp<T>::close(fd());
+        };
+        bool send(Msg * msg)
+        {
+            return BooTcp<T>::send(fd(), msg);
+        };
+        Sock fd() override
+        {
+            return _fd;
+        };
+
+        virtual SSL_METHOD * sslMethod() override
+        {
+            // return ::TSLv1_client_method();
+            return nullptr;
+        };
+
+        ~Client() {};
+    private:
+        void recv()
+        {
+            while (_connected && BooTcp<T>::recvSock(_fd)) {}
+        };
     private:
         Sock _fd = 0;
         bool _connected = false;

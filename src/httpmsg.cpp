@@ -1,7 +1,7 @@
 
 #include "httpmsg.h"
 
-std::map<Sock, std::string> boohttp::Msg::bufs;
+std::map<bootcp::Conn *, std::string> boohttp::Msg::bufs;
 
 boohttp::Msg::Msg()
 {
@@ -92,7 +92,7 @@ std::string boohttp::Msg::body()
     return _body;
 }
 
-bool boohttp::Msg::recv(Sock fd)
+bool boohttp::Msg::recv(bootcp::Conn * conn)
 {
     http_parser_settings s;
     initParserSettings(&s);
@@ -102,16 +102,16 @@ bool boohttp::Msg::recv(Sock fd)
     char buf[513];
     while(true) {
         int r = 0;
-        r = read(fd, buf, 512);    
+        r = conn->read(buf, 512);    
         if (r == 0) {
             return false;
         }
         buf[r] = '\0';
-        append(fd, buf);
-        const char * data = bufs[fd].c_str();
-        size_t len = bufs[fd].length();
+        append(conn, buf);
+        const char * data = bufs[conn].c_str();
+        size_t len = bufs[conn].length();
         size_t parsed = http_parser_execute(&p, &s, data, r);
-        done(fd, parsed);
+        done(conn, parsed);
         if (state == 1) {
             break;
         }
@@ -199,17 +199,17 @@ void boohttp::Msg::initParserSettings(http_parser_settings * s)
     };
 }
 
-void boohttp::Msg::append(Sock fd, const char * buf)
+void boohttp::Msg::append(bootcp::Conn * conn, const char * buf)
 {
-    if (bufs.find(fd) == bufs.end()) {
-        bufs[fd] = "";
+    if (bufs.find(conn) == bufs.end()) {
+        bufs[conn] = "";
     }
-    bufs[fd] += buf;
+    bufs[conn] += buf;
 }
 
-void boohttp::Msg::done(Sock fd, int len)
+void boohttp::Msg::done(bootcp::Conn * conn, int len)
 {
-    bufs[fd] = bufs[fd].substr(len, bufs[fd].length() - len);
+    bufs[conn] = bufs[conn].substr(len, bufs[conn].length() - len);
 }
 
 std::string boohttp::Msg::upper(std::string s)

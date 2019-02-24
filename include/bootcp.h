@@ -2,6 +2,10 @@
 #define _BOO_TCP_H
 
 #include "msg.h"
+#include "sock.h"
+#include "sslconn.h"
+#include "tcpconn.h"
+
 #include <map>
 #include <string>
 #include <list>
@@ -9,49 +13,149 @@
 #include <functional>
 #include <thread>
 
+
 namespace bootcp
 {
-    class BooTcp
+    template<class T> class BooTcp : public SockError
     {
     public:
-        BooTcp();
-        BooTcp(Msg * msg);
-        void msgTemplate(Msg * msg);
-        void on(MsgId * msgid,  std::function<void(Sock, Msg*, BooTcp *)>);
-        bool send(Sock fd, Msg * msg);
-        void asyncSend(Sock fd, Msg * msg);
-        void withSSL(std::string cert, std::string key, SSL_METHOD * method);
-        void maybeSSL(Sock fd);
-        void onNotExistHandler(std::function<void(Sock, Msg *, BooTcp *)>);
-        void wait(Sock fd, MsgId * msgId);
-        void close(Sock fd);
-        int err();
-        std::string strerr();
+        BooTcp()
+        {
+            init();
+        };
+        void on(MsgId * msgid,  std::function<void(Sock, T*)> on_msg)
+        {
+            _hlock.lock();
+            handlers[msgid->clone()] = on_msg;
+            _hlock.unlock();
+        };
+
+        void newConn(Sock fd)
+        {
+            if (_ssl_on) {
+                _conns[fd] = new SslConn(fd, _ssl_cert, _ssl_key, sslMethod());
+                return;
+            }
+            _conns[fd] = new TcpConn(fd);
+        }
+
+        bool send(Sock fd, Msg * msg)
+        {
+            char * raw;
+            int len;
+            msg->pack(&raw, &len);
+            size_t ret = _conns[fd]->write(raw, len);
+            delete raw;
+            if (!_ok) {
+                _err_code = _conns[fd]->err();
+                _err_str = _conns[fd]->errstr();
+            }
+
+            return _ok;
+        };
+
+        void asyncSend(Sock fd, Msg * msg)
+        {
+            Msg * m = msg->clone();
+            std::thread sender(&bootcp::BooTcp<T>::asend, this, fd, m);
+            sender.detach();
+        };
+
+        void withSSL(std::string cert, std::string key)
+        {
+            _ssl_cert = cert;
+            _ssl_key = key;
+            _ssl_on = true;
+        };
+        void onNotExistHandler(std::function<void(Sock, Msg *)> handle)
+        {
+            _notExistHandler = handle;
+        };
+        void close(Sock fd)
+        {
+            shutdown(fd, 2);
+#ifdef WIN32  
+            closesocket(fd);
+#else
+            ::close(fd);
+#endif  
+        };
         virtual Sock fd() = 0;
-        ~BooTcp();
+        virtual SSL_METHOD * sslMethod() = 0;
+        ~BooTcp()
+        {
+#ifdef WIN32  
+            if (_inited) {
+                WSACleanup();
+            }
+#endif   
+        };
     protected:
-        bool somethingWrong(int ecode);
-        bool somethingWrong(int ecode, bool maybeSSL);
-        virtual void onRecv(Sock fd, Msg * msg);
-        bool recvSock(Sock fd);
-        bool sockerr(Sock fd);
-        void read(Sock fd, char * buf, int len);
-        int ecode = 0;
-        std::string error;
+        virtual void onRecv(Sock fd, T * msg)
+        {
+            _hlock.lock();
+            auto i = handlers.begin();
+            while (i != handlers.end()) {
+                MsgId * msgid = msg->msgid();
+                if (!i->first->match(msgid)) {
+                    delete msgid;
+                    i++;
+                    continue;
+                }
+                delete msgid;
+                i->second(fd, msg);
+                break;
+            }
+            if (i == handlers.end() && _notExistHandler != nullptr) {
+                _notExistHandler(fd, msg);
+            }
+            _hlock.unlock();
+        };
+        bool recvSock(Sock fd)
+        {
+            auto msg = new T();
+            if (!msg->recv(_conns[fd])) {
+                return false;
+            }
+            onRecv(fd, msg);
+            delete msg;
+            return true;
+        };
+
     private:
-        void init();
-        void asend(Sock fd, Msg * msg);
+        void init()
+        {
+#ifdef WIN32  
+            _inited = false;
+            WORD wVersionRequested;
+            wVersionRequested = MAKEWORD(2, 2);
+            WSADATA wsaData;
+            int nRet = WSAStartup(wVersionRequested, &wsaData);
+            if (nRet != 0) {
+                _err_code = 1000001;
+                _err_str = "initilize error";
+                return;
+            }
+            _inited = true;
+#else
+            _inited = true;
+#endif  
+        };
+        void asend(Sock fd, Msg * msg)
+        {
+            send(fd, msg);
+            delete msg;
+        };
     private:
-        Msg * _msg = nullptr;
-        std::map<MsgId*, std::function<void(Sock, Msg*, BooTcp *)>> handlers;
-        std::map<Sock, std::list<MsgId*>> waits;
-        std::mutex _wlock;
+        std::map<MsgId*, std::function<void(Sock, T*)>> handlers;
+        std::map<Sock, Conn *> _conns;
         std::mutex _hlock;
         std::string _ssl_cert;
         std::string _ssl_key;
-        SSL * _ssl = nullptr;
+        bool _ssl_on = false;
         bool _inited = false;
-        std::function<void(Sock, Msg*, BooTcp *)> _notExistHandler = nullptr;
+        bool _ok = true;
+        std::function<void(Sock, T*)> _notExistHandler = nullptr;
     };
 }
 

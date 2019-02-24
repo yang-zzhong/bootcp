@@ -1,9 +1,7 @@
 #include "httpclient.h"
 
-boohttp::Client::Client()
+boohttp::Client::Client() : bootcp::Client<boohttp::Response>::Client()
 {
-    boohttp::Response res;
-    msgTemplate(&res);
 }
 
 boohttp::Client::~Client() {}
@@ -13,7 +11,7 @@ bool boohttp::Client::send(bootcp::Msg * msg)
     _rlock.lock();
     _reqs.push_back((boohttp::Request *)msg);
     _rlock.unlock();
-    return bootcp::Client::send(msg);
+    return bootcp::Client<boohttp::Response>::send(msg);
 }
 
 boohttp::Response * boohttp::Client::waitResponse(boohttp::Request * req)
@@ -21,8 +19,8 @@ boohttp::Response * boohttp::Client::waitResponse(boohttp::Request * req)
     time_t begin = time(nullptr);
     while (true) {
         if (time(nullptr) - begin > timeout) {
-            ecode = 100000;
-            error = "Timeout Out";
+            _err_code = 100000;
+            _err_str = "Timeout Out";
             return nullptr;
         }
         _plock.lock();

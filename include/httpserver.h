@@ -10,7 +10,7 @@
 
 namespace boohttp
 {
-    class Server : public bootcp::Server
+    class Server : public bootcp::Server<boohttp::Request>
     {
     public:
         Server();
