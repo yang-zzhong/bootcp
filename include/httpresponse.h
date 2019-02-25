@@ -24,7 +24,6 @@ namespace boohttp
     protected:
         virtual int onHeaderComplete(http_parser * _);
     private:
-        Request * _req;
         int _statusCode = 200;
     };
 }

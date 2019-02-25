@@ -40,38 +40,37 @@ boohttp::Response * boohttp::Client::waitResponse(boohttp::Request * req)
 
 void boohttp::Client::asyncSend(boohttp::Request * req, SendCallback handle)
 {
-    std::thread th(&boohttp::Client::asend, this, *req, handle);
-    th.detach();
+    // auto r = req->clone();
+    // std::thread th(&boohttp::Client::assend, this, r, handle);
+    // th.detach();
 }
 
-void boohttp::Client::asend(boohttp::Request req, SendCallback handle)
+void boohttp::Client::assend(boohttp::Request * req, SendCallback handle)
 {
-    send(&req, handle);
+    send(req, handle);
 }
 
 void boohttp::Client::send(boohttp::Request * req, SendCallback handle)
 {
     send(req);
     boohttp::Response * res = waitResponse(req);
+    if (res == nullptr) {
+        return;
+    }
+    handle(req, res);
     if (res->headerLike("Connection", "close")) {
         close();
     }
-    if (res == nullptr) {
-        _rlock.lock();
-        _reqs.pop_back();
-        _rlock.unlock();
-    }
-    handle(req, res);
     delete res;
 }
 
-void boohttp::Client::onRecv(Sock fd, bootcp::Msg * msg)
+void boohttp::Client::onRecv(Sock fd, boohttp::Response * res)
 {
     _rlock.lock();
     auto req = _reqs.back();
     _rlock.unlock();
     _reqs.pop_back();
     _plock.lock();
-    _pairs[req] = (boohttp::Response *)msg->clone();
+    _pairs[req] = (boohttp::Response*)res->clone();
     _plock.unlock();
 }

@@ -16,12 +16,12 @@ namespace boohttp
         Client();
         ~Client();
         virtual bool send(bootcp::Msg * msg);
-        virtual void onRecv(Sock fd, bootcp::Msg * msg);
+        virtual void onRecv(Sock fd, boohttp::Response *);
         void asyncSend(boohttp::Request *, SendCallback);
         void send(boohttp::Request *, SendCallback);
 
     private:
-        void asend(boohttp::Request req, SendCallback callback);
+        void assend(boohttp::Request * req, SendCallback callback);
         Response * waitResponse(Request * req);
         std::list<boohttp::Request *> _reqs;
         std::map<boohttp::Request *, boohttp::Response *> _pairs;

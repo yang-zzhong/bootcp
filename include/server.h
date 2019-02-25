@@ -119,12 +119,14 @@ namespace bootcp
         };
         void send(Msg * msg, std::set<Sock> fds)
         {
+            _clock.lock();
             for (auto i = clients.begin(); i != clients.end(); ++i) {
                 if (!i->second || fds.find(i->first) == fds.end()) {
                     continue;
                 }
                 BooTcp<T>::asyncSend(i->first, msg);
             }
+            _clock.unlock();
         };
         void broadcast(Msg * msg)
         {

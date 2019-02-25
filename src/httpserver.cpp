@@ -37,6 +37,9 @@ void boohttp::Server::on(boohttp::MsgId * msgid, std::function<void(boohttp::Req
         res.v_major = req->v_major;
         res.v_minor = req->v_minor;
         handle(req, &res);
+        if (req->headerLike("Connection", "close")) {
+            res.header("Connection", "close");
+        }
         bootcp::BooTcp<boohttp::Request>::send(fd, &res);
         if (req->headerLike("Connection", "close")) {
             bootcp::BooTcp<boohttp::Request>::close(fd);

@@ -60,16 +60,7 @@ std::string boohttp::Msg::header(std::string key)
 
 bool boohttp::Msg::hasHeader(std::string key)
 {
-    _hlock.lock();
-    for (auto h = _headers.begin(); h != _headers.end(); ++h) {
-        if (upper(h->first) == upper(key)) {
-            _hlock.unlock();
-            return true;
-        }
-    }
-    _hlock.unlock();
-
-    return false;
+    return header(key) != "";
 }
 
 void boohttp::Msg::header(std::string key, std::string value)
@@ -189,7 +180,6 @@ void boohttp::Msg::initParserSettings(http_parser_settings * s)
         }
         msg->v_major = _->http_major;
         msg->v_minor = _->http_minor;
-        std::string conn = msg->header("Connection");
         if (!msg->hasHeader("Connection")) {
             if (msg->version() == "1.0") {
                 msg->header("Connection", "close");

@@ -47,7 +47,7 @@ int http()
     }
     boohttp::Request req;
     req.method("GET");
-    req.path("/");
+    req.path("/hello-world");
     req.header("content-type", "text/html");
     c.send(&req, [&](boohttp::Request * req, boohttp::Response *res) {
         if (res == nullptr) {
