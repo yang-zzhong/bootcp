@@ -13,7 +13,9 @@ boohttp::Msg::~Msg()
 
 void boohttp::Msg::reset()
 {
+    _hlock.lock();
     _headers.erase(_headers.begin(), _headers.end());
+    _hlock.unlock();
     _body = "";
     _hfields.clear();
     state = -1;
@@ -45,28 +47,36 @@ void boohttp::Msg::_packMain(std::stringstream & ss, char ** raw, int * len)
 
 std::string boohttp::Msg::header(std::string key)
 {
+    _hlock.lock();
     for (auto h = _headers.begin(); h != _headers.end(); ++h) {
         if (upper(h->first) == upper(key)) {
+            _hlock.unlock();
             return h->second;
         }
     }
+    _hlock.unlock();
     return "";
 }
 
 bool boohttp::Msg::hasHeader(std::string key)
 {
+    _hlock.lock();
     for (auto h = _headers.begin(); h != _headers.end(); ++h) {
         if (upper(h->first) == upper(key)) {
+            _hlock.unlock();
             return true;
         }
     }
+    _hlock.unlock();
 
     return false;
 }
 
 void boohttp::Msg::header(std::string key, std::string value)
 {
+    _hlock.lock();
     _headers[key] = value;
+    _hlock.unlock();
 }
 
 void boohttp::Msg::removeHeader(std::string key)
@@ -74,7 +84,9 @@ void boohttp::Msg::removeHeader(std::string key)
     if (!hasHeader(key)) {
         return;
     }
+    _hlock.lock();
     _headers.erase(key);
+    _hlock.unlock();
 }
 
 std::map<std::string, std::string> * boohttp::Msg::header()

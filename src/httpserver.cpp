@@ -32,7 +32,7 @@ void boohttp::Server::init()
 
 void boohttp::Server::on(boohttp::MsgId * msgid, std::function<void(boohttp::Request * req, boohttp::Response *res)> handle)
 {
-    bootcp::Server<boohttp::Request>::on(msgid, [&](Sock fd, boohttp::Request * req) {
+    bootcp::Server<boohttp::Request>::on(msgid, [this, handle](Sock fd, boohttp::Request * req) {
         boohttp::Response res;
         res.v_major = req->v_major;
         res.v_minor = req->v_minor;

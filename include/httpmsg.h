@@ -63,6 +63,7 @@ namespace boohttp
         std::list<std::string> _hfields;
         std::string _body;
         unsigned int state = -1;
+        std::mutex _hlock;
 
     private:
         static std::map<bootcp::Conn *, std::string> bufs;

@@ -44,7 +44,7 @@ namespace bootcp
                 return false;
             }
             ecode = ::listen(_fd, 5);
-            if (BooTcp<T>::isOK(ecode)) {
+            if (!BooTcp<T>::isOK(ecode)) {
                 return false;
             }
             _running = true;
@@ -176,7 +176,7 @@ namespace bootcp
             struct sockaddr_in sockAddr;
             while (_running) {
                 Sock client = ::accept(_fd, (sockaddr*)&sockAddr, &len);
-                if (BooTcp<T>::isOK(client)) {
+                if (!BooTcp<T>::isOK(client)) {
                     continue;
                 }
                 BooTcp<T>::newConn(client);
@@ -197,7 +197,7 @@ namespace bootcp
                 auto i = clients.find(client);
                 bool valid = i != clients.end() && clients[client];
                 _clock.unlock();
-                if ( !valid) {
+                if (!valid) {
                     break;
                 }
                 if (!BooTcp<T>::recvSock(client)) {

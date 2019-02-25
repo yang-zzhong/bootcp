@@ -16,9 +16,11 @@
 using namespace std;
 
 int http();
+int simple();
 
 int main() 
 {
+    // return simple();
     return http();
 }
 
@@ -85,11 +87,10 @@ int simple()
         std::cout << "message from client: " << data << std::endl;
         server.broadcast(msg);
     });
-    server.on(&closeid, [](Sock client, bootcp::Msg *msg) {
-        auto server = (bootcp::Server*)tcp;
+    server.on(&closeid, [&](Sock client, bootcp::Msg *msg) {
         server.stop();
     });
-    bootcp::Client<SimpleMsg> client((char *)"127.0.0.1", 1111);
+    bootcp::Client<bootcp::SimpleMsg> client((char *)"127.0.0.1", 1111);
     if (!client.connected()) {
         std::cout << "connect error" << std::endl;
         return -1;

@@ -82,8 +82,12 @@ namespace bootcp
         };
         virtual Sock fd() = 0;
         virtual SSL_METHOD * sslMethod() = 0;
+
         ~BooTcp()
         {
+            for (auto i = _conns.begin(); i != _conns.end(); ++i) {
+                delete i->second;
+            }
 #ifdef WIN32  
             if (_inited) {
                 WSACleanup();
@@ -94,23 +98,21 @@ namespace bootcp
         virtual void onRecv(Sock fd, T * msg)
         {
             _hlock.lock();
-            auto i = handlers.begin();
-            while (i != handlers.end()) {
+            for (auto i = handlers.begin(); i != handlers.end(); ++i) {
                 MsgId * msgid = msg->msgid();
-                if (!i->first->match(msgid)) {
-                    delete msgid;
-                    i++;
-                    continue;
+                if (i->first->match(msgid)) {
+                    i->second(fd, msg);
+                    _hlock.unlock();
+                    return;
                 }
                 delete msgid;
-                i->second(fd, msg);
-                break;
-            }
-            if (i == handlers.end() && _notExistHandler != nullptr) {
-                _notExistHandler(fd, msg);
             }
             _hlock.unlock();
+            if (_notExistHandler != nullptr) {
+                _notExistHandler(fd, msg);
+            }
         };
+
         bool recvSock(Sock fd)
         {
             auto msg = new T();

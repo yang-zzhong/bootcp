@@ -31,7 +31,7 @@ namespace bootcp
             if (code == SOCKET_ERROR) {
                 if (!FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
                                    NULL,
-                                   ecode,
+                                   code,
                                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                                    (LPTSTR)&err,
                                    0,
