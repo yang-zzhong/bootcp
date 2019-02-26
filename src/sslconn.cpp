@@ -4,14 +4,31 @@ bootcp::SslConn::SslConn()
 {
 }
 
-bootcp::SslConn::SslConn(Sock fd, std::string cert, std::string key, SSL_METHOD * method)
+bootcp::SslConn::SslConn(Sock fd, std::string cert, std::string key)
 {
     _fd = fd;
-    init(cert, key, method);
+    initAsServer(cert, key);
     accept(fd);
 }
 
-void bootcp::SslConn::init(std::string cert, std::string key, SSL_METHOD * method)
+bootcp::SslConn::SslConn(Sock fd)
+{
+    _fd = fd;
+    initAsClient();
+}
+
+void bootcp::SslConn::initAsClient()
+{
+    initSsl();
+    _ctx = SSL_CTX_new(TLSv1_2_client_method());
+    _ok = _ctx != nullptr;
+    if (!_ok) {
+        inErr();
+        return;
+    }
+}
+
+void bootcp::SslConn::initSsl()
 {
 #if OPENSSL_VERSION_NUMBER >= 0x10100003L
     _ok = OPENSSL_init_ssl(OPENSSL_INIT_LOAD_CONFIG, NULL) != 0;
@@ -26,7 +43,16 @@ void bootcp::SslConn::init(std::string cert, std::string key, SSL_METHOD * metho
     SSL_load_error_strings();
     OpenSSL_add_all_algorithms();
 #endif
-    _ctx = SSL_CTX_new(method);
+    if (_ctx != nullptr) {
+        SSL_CTX_free(_ctx);
+        _ctx = nullptr;
+    }
+}
+
+void bootcp::SslConn::initAsServer(std::string cert, std::string key)
+{
+    initSsl();
+    _ctx = SSL_CTX_new(TLSv1_2_server_method());
     _ok = _ctx != nullptr;
     if (!_ok) {
         inErr();

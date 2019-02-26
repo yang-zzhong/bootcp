@@ -4,7 +4,10 @@ boohttp::Client::Client() : bootcp::Client<boohttp::Response>::Client()
 {
 }
 
-boohttp::Client::~Client() {}
+boohttp::Client::~Client() 
+{
+
+}
 
 bool boohttp::Client::send(bootcp::Msg * msg)
 {

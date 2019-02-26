@@ -23,6 +23,13 @@ namespace bootcp
         {
             init();
         };
+
+        BooTcp(std::string cert, std::string key)
+        {
+            init();
+            withSSL(cert, key);
+        };
+
         void on(MsgId * msgid,  std::function<void(Sock, T*)> on_msg)
         {
             _hlock.lock();
@@ -30,13 +37,15 @@ namespace bootcp
             _hlock.unlock();
         };
 
-        void newConn(Sock fd)
+        void initConn(Sock fd)
         {
-            if (_ssl_on) {
-                _conns[fd] = new SslConn(fd, _ssl_cert, _ssl_key, sslMethod());
-                return;
+            if (_ssl_on && _ssl_server) {
+                _conns[fd] = new SslConn(fd, _ssl_cert, _ssl_key);
+            } else if (_ssl_on && !_ssl_server) {
+                _conns[fd] = new SslConn(fd);
+            } else {
+                _conns[fd] = new TcpConn(fd);
             }
-            _conns[fd] = new TcpConn(fd);
         }
 
         bool send(Sock fd, Msg * msg)
@@ -65,8 +74,16 @@ namespace bootcp
         {
             _ssl_cert = cert;
             _ssl_key = key;
+            _ssl_server = true;
             _ssl_on = true;
         };
+
+        void withSSL()
+        {
+            _ssl_server = false;
+            _ssl_on = true;
+        };
+
         void onNotExistHandler(std::function<void(Sock, Msg *)> handle)
         {
             _notExistHandler = handle;
@@ -152,9 +169,12 @@ namespace bootcp
         std::map<MsgId*, std::function<void(Sock, T*)>> handlers;
         std::map<Sock, Conn *> _conns;
         std::mutex _hlock;
+
         std::string _ssl_cert;
         std::string _ssl_key;
         bool _ssl_on = false;
+        bool _ssl_server = true;
+
         bool _inited = false;
         bool _ok = true;
         std::function<void(Sock, T*)> _notExistHandler = nullptr;

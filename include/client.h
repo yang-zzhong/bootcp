@@ -40,13 +40,14 @@ namespace bootcp
             if (!BooTcp<T>::isOK(::connect(_fd, (struct sockaddr *)&addr, sizeof(struct sockaddr)))) {
                 return false;
             }
-            BooTcp<T>::newConn(_fd);
+            BooTcp<T>::initConn(_fd);
             _connected = true;
             std::thread recv(&Client<T>::recv, this);
             recv.detach();
 
             return true;
         };
+
         bool connected()
         {
             return _connected;

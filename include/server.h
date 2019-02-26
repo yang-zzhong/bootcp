@@ -17,9 +17,8 @@ namespace bootcp
         Server() : BooTcp<T>()
         {
         };
-        Server(int port) : BooTcp<T>()
+        Server(std::string cert, std::string key) : BooTcp<T>(cert, key)
         {
-            listen(port);
         };
         bool ready()
         {
@@ -181,7 +180,7 @@ namespace bootcp
                 if (!BooTcp<T>::isOK(client)) {
                     continue;
                 }
-                BooTcp<T>::newConn(client);
+                BooTcp<T>::initConn(client);
                 _clock.lock();
                 clients[client] = true;
                 _clock.unlock();

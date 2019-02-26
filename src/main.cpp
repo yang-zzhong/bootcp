@@ -26,7 +26,7 @@ int main()
 
 int http()
 {
-    boohttp::Server s(1111);
+    boohttp::Server s("cert.pem", "key.pem");
     boohttp::MsgId helloworld("/hello-world", "GET");
     s.on(&helloworld, [](boohttp::Request * req, boohttp::Response * res) {
         cout << "method: " << req->method() << endl;
@@ -39,8 +39,11 @@ int http()
         // std::this_thread::sleep_for(std::chrono::seconds(40));
         res->body("hello world");
     });
+
+    s.listen(1111);
     
     boohttp::Client c;
+    c.withSSL();
     if (!c.connect((char *)"127.0.0.1", 1111)) {
         cout << "connect error: " << c.str() << endl;
         return -1;
@@ -68,7 +71,8 @@ int simple()
     bootcp::SimpleMsg temp;
     bootcp::SimpleMsgId msgid(TEST_MSG_ID);
     bootcp::SimpleMsgId closeid(TEST_CLOSE_ID);
-    bootcp::Server<bootcp::SimpleMsg> server(1111);
+    bootcp::Server<bootcp::SimpleMsg> server;
+    server.listen(1111);
     if (!server.ready()) {
         std::cout << "server startup error" << std::endl;
         return -1;

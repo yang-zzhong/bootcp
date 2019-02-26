@@ -5,10 +5,9 @@ boohttp::Server::Server() : bootcp::Server<boohttp::Request>::Server()
     init();
 }
 
-boohttp::Server::Server(int port) : bootcp::Server<boohttp::Request>::Server()
+boohttp::Server::Server(std::string cert, std::string key) : bootcp::Server<boohttp::Request>::Server(cert, key)
 {
     init();
-    listen(port);
 }
 
 boohttp::Server::~Server()
